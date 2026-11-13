@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
 import { SearchBox } from "@/components/Chrome";
+import { CompareTeaser } from "@/components/PriceCompare";
 import { ProductCard } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
-import { characterAndGacha, comparable, editorPicks, jpOffer, krOffer, liveEvents, newReleases, popupItems, upcoming } from "@/lib/catalog";
+import { characterAndGacha, comparable, editorPicks, liveEvents, newReleases, popupItems, upcoming } from "@/lib/catalog";
 import { getEvents, getProducts } from "@/lib/data";
-import { jpyToKrw, won, yen } from "@/lib/format";
 import { CATEGORIES } from "@/lib/taxonomy";
 import type { CategorySlug, Product, VisualMotif } from "@/lib/types";
 
@@ -79,27 +79,6 @@ function Hero({ products }: { products: Product[] }) {
         </div>
       </div>
     </section>
-  );
-}
-
-function CompareTeaser({ product: p }: { product: Product }) {
-  const j = jpOffer(p)!;
-  const k = krOffer(p)!;
-  const jKrw = jpyToKrw(j.price);
-  const diff = k.price - jKrw;
-  return (
-    <Link href={`/products/${p.slug}#price`} className="card flex items-center gap-3 p-3">
-      <ProductVisual product={p} className="h-20 w-20 shrink-0 rounded-2xl" />
-      <div className="min-w-0 flex-1">
-        <h3 className="truncate text-[14px] font-bold text-ink">{p.nameKo}</h3>
-        <p className="mt-1 text-[12px] text-mute">
-          일본 {yen(j.price)} <span className="text-ink-soft">(약 {won(jKrw)})</span> · 한국 {won(k.price)}
-        </p>
-        <p className="mt-1.5 inline-block rounded-full bg-mint px-2.5 py-0.5 text-[12px] font-bold text-mint-deep">
-          일본이 약 {won(Math.abs(diff))} {diff >= 0 ? "저렴" : "비쌈"}
-        </p>
-      </div>
-    </Link>
   );
 }
 

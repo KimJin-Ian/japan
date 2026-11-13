@@ -3,6 +3,7 @@ import { eventKeyDate, eventPhase } from "@/lib/catalog";
 import { dday, shortDate } from "@/lib/format";
 import { REGIONS } from "@/lib/taxonomy";
 import type { EventItem, EventKind } from "@/lib/types";
+import { RateNote } from "./Rate";
 import { ScopeSticker } from "./Stickers";
 
 /** 잡지 코너 제목처럼: 작은 일본어 라벨 + 마스킹테이프가 붙은 제목 */
@@ -81,8 +82,8 @@ export function EventRow({ event: e }: { event: EventItem }) {
 export function DemoNotice({ className = "" }: { className?: string }) {
   return (
     <p className={`rounded-2xl border border-dashed border-latte bg-white/70 px-4 py-3 text-[12px] leading-relaxed text-ink-soft ${className}`}>
-      <b className="text-ink">화면 확인용 예시 데이터예요.</b> 브랜드·상품·가격·출처 링크는 모두 지어낸 것이고 실제 상품 정보가 아니에요. 원화 금액은
-      데모용 가정 환율(100엔 = 930원)로 계산했어요.
+      <b className="text-ink">화면 확인용 예시 데이터예요.</b> 브랜드·상품·가격·출처 링크는 모두 지어낸 것이고 실제 상품 정보가 아니에요. 원화 금액은{" "}
+      <RateNote />로 계산했어요.
     </p>
   );
 }

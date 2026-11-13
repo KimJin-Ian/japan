@@ -6,6 +6,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cacheLife, cacheTag } from "next/cache";
 import { CANDIDATES, COLLECTION_LOGS, EVENTS, PRODUCTS } from "./demo-data";
+import { DEMO_RATE } from "./format";
 import type { Candidate, CollectionLog, EventItem, Offer, Product, Source } from "./types";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -121,6 +122,24 @@ export async function getEvents(): Promise<EventItem[]> {
   const { data, error } = await publicDb().from("events").select("*, event_changes(*), event_products(products(slug))");
   if (error) throw new Error(`일정을 불러오지 못했습니다: ${error.message}`);
   return data.map(toEvent);
+}
+
+/** 최신 JPY→KRW 환율. 수집기가 하루 한 번 exchange_rates 에 넣는다. 없으면 가정값 */
+export async function getRate(): Promise<{ krwPer100Jpy: number; label: string; isDemo: boolean }> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("rate");
+  const fallback = { krwPer100Jpy: DEMO_RATE.krwPer100Jpy, label: DEMO_RATE.label, isDemo: true };
+  if (!dbReady) return fallback;
+  const { data, error } = await publicDb()
+    .from("exchange_rates")
+    .select("rate, source")
+    .eq("base", "JPY")
+    .eq("quote", "KRW")
+    .order("fetched_at", { ascending: false })
+    .limit(1);
+  if (error || !data?.length) return fallback;
+  return { krwPer100Jpy: Math.round(Number(data[0].rate) * 1000) / 10, label: data[0].source, isDemo: false };
 }
 
 export const getProduct = async (slug: string) => (await getProducts()).find((p) => p.slug === slug);

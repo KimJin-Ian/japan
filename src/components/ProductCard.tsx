@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { jpOffer } from "@/lib/catalog";
-import { dday, jpyToKrw, shortDate, won, yen } from "@/lib/format";
+import { dday, shortDate, yen } from "@/lib/format";
 import { REGIONS } from "@/lib/taxonomy";
 import type { Product } from "@/lib/types";
 import { ProductVisual } from "./ProductVisual";
+import { Krw } from "./Rate";
 import { SaveHeart } from "./SaveButton";
 import { LimitedStickers } from "./Stickers";
 
@@ -42,7 +43,7 @@ export function ProductCard({ product: p }: { product: Product }) {
             {offer ? (
               <p className="flex flex-wrap items-baseline gap-x-1.5">
                 <span className="font-display text-[19px] leading-none text-ink">{yen(offer.price)}</span>
-                <span className="text-[11px] text-mute">약 {won(jpyToKrw(offer.price))}</span>
+                <Krw jpy={offer.price} className="text-[11px] text-mute" />
               </p>
             ) : (
               <p className="text-[13px] font-bold text-ink-soft">가격 확인 필요</p>

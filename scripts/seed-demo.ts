@@ -22,7 +22,6 @@ must(await db.from("events").delete().eq("is_demo", true), "events 삭제");
 must(await db.from("product_candidates").delete().like("source_url", "https://example.com/demo/%"), "candidates 삭제");
 must(await db.from("products").delete().eq("is_demo", true), "products 삭제");
 must(await db.from("collection_logs").delete().like("target", "%(데모)"), "logs 삭제");
-must(await db.from("exchange_rates").delete().eq("source", "데모용 가정 환율"), "rates 삭제");
 
 // 2) 상품
 const productRows = must(
@@ -173,8 +172,5 @@ must(
   ),
   "candidates 입력",
 );
-
-// 5) 환율 (가정값임을 source 에 남긴다)
-must(await db.from("exchange_rates").insert({ base: "JPY", quote: "KRW", rate: 9.3, source: "데모용 가정 환율" }), "rates 입력");
 
 console.log(`완료: 상품 ${productRows.length} · 일정 ${eventRows.length} · 후보 ${CANDIDATES.length} · 로그 ${COLLECTION_LOGS.length}`);

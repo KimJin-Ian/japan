@@ -1,5 +1,9 @@
+"use client";
+import Link from "next/link";
 import { jpOffer, krOffer } from "@/lib/catalog";
-import { DEMO_RATE, checkedLabel, jpyToKrw, won, yen } from "@/lib/format";
+import { checkedLabel, won, yen } from "@/lib/format";
+import { ProductVisual } from "./ProductVisual";
+import { RateNote, toKrw, useRate } from "./Rate";
 import type { Product } from "@/lib/types";
 
 const Ext = ({ href, children }: { href: string; children: React.ReactNode }) => (
@@ -10,6 +14,7 @@ const Ext = ({ href, children }: { href: string; children: React.ReactNode }) =>
 
 /** 일본 가격 · 한국 가격 비교. 같은 상품임을 확인한 한국 가격이 없으면 '한국 가격 미확인'으로 둔다. */
 export function PriceCompare({ product: p }: { product: Product }) {
+  const rate = useRate();
   const j = jpOffer(p);
   const k = krOffer(p);
   const unverifiedKr = p.offers.find((o) => o.country === "KR" && !o.sameItemVerified);
@@ -23,7 +28,7 @@ export function PriceCompare({ product: p }: { product: Product }) {
     );
   }
 
-  const jKrw = jpyToKrw(j.price);
+  const jKrw = toKrw(j.price, rate);
   const max = Math.max(jKrw, k?.price ?? 0);
   const diff = k ? k.price - jKrw : 0;
   const pct = k ? Math.round((Math.abs(diff) / k.price) * 100) : 0;
@@ -77,9 +82,33 @@ export function PriceCompare({ product: p }: { product: Product }) {
         )}
       </div>
       <p className="border-t border-line bg-cream/70 px-5 py-3 text-[11px] leading-relaxed text-mute">
-        원화 환산은 {DEMO_RATE.label}(100엔 = {DEMO_RATE.krwPer100Jpy}원)로 계산한 참고 값이에요. 배송비, 관·부가세, 구매대행 수수료, 면세 혜택은 포함하지 않았어요.
+        원화 환산은 <RateNote /> 기준 참고 값이에요. 배송비, 관·부가세, 구매대행 수수료, 면세 혜택은 포함하지 않았어요.
       </p>
     </div>
+  );
+}
+
+/** 홈의 가격 비교 한 줄 */
+export function CompareTeaser({ product: p }: { product: Product }) {
+  const rate = useRate();
+  const j = jpOffer(p);
+  const k = krOffer(p);
+  if (!j || !k) return null;
+  const jKrw = toKrw(j.price, rate);
+  const diff = k.price - jKrw;
+  return (
+    <Link href={`/products/${p.slug}#price`} className="card flex items-center gap-3 p-3">
+      <ProductVisual product={p} className="h-20 w-20 shrink-0 rounded-2xl" />
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate text-[14px] font-bold text-ink">{p.nameKo}</h3>
+        <p className="mt-1 text-[12px] text-mute">
+          일본 {yen(j.price)} <span className="text-ink-soft">(약 {won(jKrw)})</span> · 한국 {won(k.price)}
+        </p>
+        <p className="mt-1.5 inline-block rounded-full bg-mint px-2.5 py-0.5 text-[12px] font-bold text-mint-deep">
+          일본이 약 {won(Math.abs(diff))} {diff >= 0 ? "저렴" : "비쌈"}
+        </p>
+      </div>
+    </Link>
   );
 }
 

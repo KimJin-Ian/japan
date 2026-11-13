@@ -3,6 +3,8 @@ import { Jua, Noto_Sans_KR, Zen_Maru_Gothic } from "next/font/google";
 import { Suspense } from "react";
 import { Header, TabBar } from "@/components/Chrome";
 import { Footer } from "@/components/Bits";
+import { RateProvider } from "@/components/Rate";
+import { getRate } from "@/lib/data";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -20,14 +22,17 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#fffaf2", width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const rate = await getRate();
   return (
     <html lang="ko" className={`${kr.variable} ${display.variable} ${maru.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Suspense>
           <Header />
         </Suspense>
-        <main className="flex-1">{children}</main>
+        <RateProvider rate={rate}>
+          <main className="flex-1">{children}</main>
+        </RateProvider>
         <Footer />
         <Suspense>
           <TabBar />
