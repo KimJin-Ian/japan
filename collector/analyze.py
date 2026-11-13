@@ -9,7 +9,7 @@
 지키는 것:
   - 모델에는 제목과 짧은 발췌만 준다. 제목에 없는 가격·날짜·판매처는 null 로 두게 한다(지어내지 않는다).
   - '한정' 표시는 공식 제목에 그 글자(期間限定 등)가 실제로 있을 때만 확정으로 올린다. 아니면 '확인 중'.
-  - 이미지는 가져오지 않는다(카테고리별 자체 그림을 쓴다).
+  - 이미지는 피드가 항목과 함께 준 대표 이미지 주소만 쓴다. 없으면 카테고리별 자체 그림을 쓴다.
 
 환경변수:
   SUPABASE_URL, SUPABASE_SECRET_KEY, ANTHROPIC_API_KEY
@@ -206,6 +206,7 @@ def publish(c: dict, it: Item, types: list[str], today: str) -> Optional[str]:
         "kr_official": "unknown",
         "conditions": ["가격·수량·구매 조건은 공식 발표에서 확인해 주세요."],
         "visual": VISUAL[category],
+        "image_url": (c.get("ai") or {}).get("imageUrl"),
         "is_demo": False,
         "publish_status": "published",
         "published_at": datetime.now(timezone.utc).isoformat(),

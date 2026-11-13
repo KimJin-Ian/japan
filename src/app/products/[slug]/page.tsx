@@ -99,6 +99,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
     brand: { "@type": "Brand", name: p.brand },
     category: categoryName(p.category),
     url: `${SITE_URL}/products/${p.slug}`,
+    ...(p.imageUrl && { image: p.imageUrl }),
     ...(p.releaseDate && { releaseDate: p.releaseDate }),
     ...(offer && {
       offers: {
@@ -178,7 +179,11 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           <div className="relative lg:sticky lg:top-36">
             <ProductVisual product={p} className={`aspect-square rounded-[28px] ${ended ? "opacity-70 grayscale-[30%]" : ""}`} />
             {p.isDemo && <DemoSticker className="absolute left-3 top-3 -rotate-3" />}
-            {!p.isDemo && <p className="mt-2 text-center text-[11px] text-mute">카테고리 그림이에요. 실제 상품 모습은 원문에서 확인해 주세요.</p>}
+            {!p.isDemo && (
+              <p className="mt-2 text-center text-[11px] text-mute">
+                {p.imageUrl ? `이미지 출처: ${p.sources[0]?.label.replace(" 원문", "") ?? p.brand}` : "카테고리 그림이에요. 실제 상품 모습은 원문에서 확인해 주세요."}
+              </p>
+            )}
           </div>
 
           <div className="mt-5 lg:mt-0">

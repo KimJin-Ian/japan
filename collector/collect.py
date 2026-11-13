@@ -9,7 +9,8 @@
   ファッションプレス, 電撃ホビーウェブ 등)은 넣지 않는다.
 
 지키는 것:
-  - 소스당 요청 1회. 기사 본문·이미지는 가져오지 않는다. 제목과 짧은 발췌만 저장한다.
+  - 소스당 요청 1회. 기사 페이지는 열지 않는다. 제목과 짧은 발췌, 피드가 항목과 함께 주는 대표 이미지 주소만 저장한다.
+    이미지 파일은 내려받거나 잘라서 다시 올리지 않고, 원래 주소를 그대로 가리킨다.
   - 후보는 product_candidates 에 '검수 대기'로 들어갈 뿐, 게시는 관리자가 결정한다.
   - 같은 주소는 한 번만 들어간다(source_url_hash 유니크).
   - 실패는 지수 백오프로 재시도하고, 소스마다 collection_logs 에 결과를 남긴다.
@@ -23,6 +24,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import os
 import re
@@ -63,8 +65,8 @@ SOURCES = [
     {"key": "kitan", "name": "키탄클럽", "target": "키탄클럽(가챠) RSS", "url": "https://kitan.jp/feed/", "all": True},
     {"key": "jumpshop", "name": "점프숍", "target": "점프숍 블로그 Atom", "url": "https://jumpshop-benelic.com/blogs/news.atom", "all": True},
     # 매체 피드(2차 출처)는 키워드에 걸린 글만
-    {"key": "gamewatch", "name": "GAME Watch", "target": "GAME Watch RSS", "url": "https://game.watch.impress.co.jp/data/rss/1.0/gmw/feed.rdf"},
-    {"key": "hobbywatch", "name": "HOBBY Watch", "target": "HOBBY Watch RSS", "url": "https://hobby.watch.impress.co.jp/data/rss/1.0/hbw/feed.rdf"},
+    {"key": "gamewatch", "name": "GAME Watch", "target": "GAME Watch RSS", "url": "https://game.watch.impress.co.jp/data/rss/1.0/gmw/feed.rdf", "no_image": True},
+    {"key": "hobbywatch", "name": "HOBBY Watch", "target": "HOBBY Watch RSS", "url": "https://hobby.watch.impress.co.jp/data/rss/1.0/hbw/feed.rdf", "no_image": True},
     {"key": "animeanime", "name": "アニメ！アニメ！", "target": "アニメ！アニメ！ RSS", "url": "https://animeanime.jp/rss20/index.rdf"},
     {"key": "fashionsnap", "name": "FASHIONSNAP", "target": "FASHIONSNAP RSS", "url": "https://www.fashionsnap.com/rss.xml"},
     {"key": "hjweb", "name": "ホビージャパンウェブ", "target": "ホビージャパンウェブ RSS", "url": "https://hjweb.jp/feed/"},
@@ -92,6 +94,24 @@ def fetch(url: str, retries: int = 3) -> tuple[bytes, int]:
     raise RuntimeError(f"{retries}회 재시도 후에도 받지 못함: {last}")
 
 
+IMG_PATTERNS = [
+    r'<(?:\w+:)?(?:content|thumbnail)\b[^>]*\burl="(https://[^"]+)"',  # media:content / media:thumbnail
+    r'<enclosure\b[^>]*\burl="(https://[^"]+)"[^>]*type="image/',
+    r'<enclosure\b[^>]*type="image/[^"]*"[^>]*\burl="(https://[^"]+)"',
+    r'<img\b[^>]*\bsrc="(https://[^"]+)"',  # 본문 HTML 안 첫 이미지
+]
+
+
+def first_image(node: ET.Element) -> str | None:
+    """피드 항목에 들어 있는 대표 이미지 주소. 피드가 주지 않으면 None (기사 페이지를 따로 열지 않는다)."""
+    raw = html.unescape(ET.tostring(node, encoding="unicode"))
+    for pat in IMG_PATTERNS:
+        m = re.search(pat, raw)
+        if m and not re.search(r"(spacer|pixel|blank|emoji|icon|logo)", m.group(1), re.I):
+            return m.group(1)
+    return None
+
+
 def parse(xml: bytes) -> list[dict]:
     """피드 형식(뉴스 사이트맵 · RSS 1.0 · RSS 2.0 · Atom)을 알아서 가려 [{title, link, excerpt, date}] 로 맞춘다."""
     root = ET.fromstring(xml)
@@ -106,6 +126,7 @@ def parse(xml: bytes) -> list[dict]:
                 "link": link.strip(),
                 "excerpt": "",  # 본문(HTML)은 저장하지 않는다
                 "date": (e.findtext("atom:published", "", NS) or e.findtext("atom:updated", "", NS) or "").strip(),
+                "image": first_image(e),
             })
     elif fmt == "news_sitemap":
         for u in root.findall("sm:url", NS):
@@ -125,6 +146,7 @@ def parse(xml: bytes) -> list[dict]:
                 "link": (it.findtext("rss:link", "", NS) or "").strip(),
                 "excerpt": (it.findtext("rss:description", "", NS) or "").strip(),
                 "date": (it.findtext("dc:date", "", NS) or "").strip(),
+                "image": first_image(it),
             })
     else:  # rss2
         for it in root.iter("item"):
@@ -133,6 +155,7 @@ def parse(xml: bytes) -> list[dict]:
                 "link": (it.findtext("link") or "").strip(),
                 "excerpt": (it.findtext("description") or "").strip(),
                 "date": (it.findtext("pubDate") or "").strip(),
+                "image": first_image(it),
             })
     return out
 
@@ -180,7 +203,7 @@ def collect_source(src: dict, dry: bool) -> bool:
                 "source_name": src["name"],
                 "source_url": it["link"],
                 "collected_at": started,
-                "ai": {"matchedKeywords": hits, "publishedAt": it["date"]},
+                "ai": {"matchedKeywords": hits, "publishedAt": it["date"], **({"imageUrl": it["image"]} if it.get("image") and not src.get("no_image") else {})},
             })
         log["ok"] = True
     except Exception as e:  # 실패도 로그로 남기고 다음 소스로 넘어간다

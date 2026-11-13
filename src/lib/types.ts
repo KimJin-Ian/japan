@@ -104,6 +104,8 @@ export type Product = {
   /** JAPAN FINDS 등록일 (ISO date) */
   addedAt: string;
   visual: { tone: "pink" | "peach" | "butter" | "mint" | "sky" | "lilac"; motif: VisualMotif };
+  /** 출처 피드가 제공한 대표 이미지 주소(원본을 그대로 가리킨다). 없으면 visual 그림을 쓴다 */
+  imageUrl?: string;
   /** 예시 데이터 여부. 실제 게시 상품은 false */
   isDemo: boolean;
 };

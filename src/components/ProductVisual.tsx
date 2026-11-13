@@ -1,4 +1,5 @@
 import type { Product, VisualMotif } from "@/lib/types";
+import { Photo } from "./Photo";
 
 // 데모 상품용 그림. 실제 상품 사진을 무단으로 쓰지 않기 위해 단순한 도형 일러스트로 대신한다.
 // 운영에서는 사용권을 확인한 이미지(products.image_url, image_rights = 'press_ok' 등)만 보여 준다.
@@ -186,6 +187,7 @@ export function ProductVisual({ product, className = "" }: { product: Product; c
         <path d="M30 160 l1.5 4.5 4.5 1.5-4.5 1.5-1.5 4.5-1.5-4.5-4.5-1.5 4.5-1.5z" fill="#fff" />
         {MOTIFS[product.visual.motif](t)}
       </svg>
+      {product.imageUrl && <Photo src={product.imageUrl} alt={product.nameKo} />}
       {product.isDemo && (
         <span className="absolute bottom-2 right-2 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-bold text-ink-soft">
           데모 그림

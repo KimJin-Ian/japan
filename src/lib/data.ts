@@ -66,6 +66,7 @@ const toProduct = (r: any): Product => ({
   addedAt: r.added_at,
   // 이미지가 없는 상품은 기본 그림으로
   visual: r.visual ?? { tone: "peach", motif: "sweets" },
+  imageUrl: r.image_url ?? undefined,
   isDemo: r.is_demo,
 });
 
