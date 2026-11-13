@@ -113,7 +113,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   };
 
   // 검색·AI 답변용 질문-답변. 화면에 그대로 보이는 내용만 구조화 데이터로 내보낸다.
-  const auto = p.sources.length > 0 && p.sources.every((s) => !s.verified);
   const unknownPlace = p.places.length === 0 || p.places[0] === "원문에서 판매처 확인";
   const place = p.places.join(", ");
   const faq: [string, string][] = [
@@ -188,7 +187,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               <StatusSticker product={p} />
               <LimitedStickers product={p} />
               <KrSticker product={p} />
-              {auto && <span className="sticker border border-dashed border-latte bg-white text-ink-soft">자동 수집 · 검수 전</span>}
             </div>
 
             <h1 className="mt-3 font-display text-[27px] leading-[1.25] text-ink lg:text-[34px]">{p.nameKo}</h1>
@@ -335,7 +333,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                       {s.label} ↗
                     </a>
                     <span className="text-[11px] text-mute">
-                      {SOURCE_TYPE[s.type]} · {checkedLabel(s.checkedAt)} · {s.verified ? "검증됨" : "검증 대기"}
+                      {SOURCE_TYPE[s.type]} · {checkedLabel(s.checkedAt)}
                     </span>
                   </li>
                 ))}

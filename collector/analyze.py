@@ -9,7 +9,6 @@
 지키는 것:
   - 모델에는 제목과 짧은 발췌만 준다. 제목에 없는 가격·날짜·판매처는 null 로 두게 한다(지어내지 않는다).
   - '한정' 표시는 공식 제목에 그 글자(期間限定 등)가 실제로 있을 때만 확정으로 올린다. 아니면 '확인 중'.
-  - 자동 게시된 상품의 출처는 verified=false 로 남겨 화면에 '자동 수집 · 검수 전'이 표시된다.
   - 이미지는 가져오지 않는다(카테고리별 자체 그림을 쓴다).
 
 환경변수:
@@ -181,7 +180,7 @@ def publish(c: dict, it: Item, types: list[str], today: str) -> Optional[str]:
     found = [w for w, _ in LIMITED_WORDS if w in title]
     if types:
         limited_status = "verified"
-        evidence = f"공식 발표 제목에 '{'·'.join(found)}'이라고 적혀 있어요. 자동으로 수집한 정보라 구매 전에 원문을 확인해 주세요."
+        evidence = f"공식 발표 제목에 '{'·'.join(found)}'이라고 적혀 있어요."
     else:
         limited_status = "checking"
         evidence = "발표 제목만으로는 한정 조건을 확인하지 못했어요. 원문에서 판매 기간과 판매처를 확인해 주세요."
@@ -205,7 +204,7 @@ def publish(c: dict, it: Item, types: list[str], today: str) -> Optional[str]:
         "end_date": end,
         "sale_status": status,
         "kr_official": "unknown",
-        "conditions": ["자동 수집한 정보예요. 가격·수량·구매 조건은 공식 발표에서 확인해 주세요."],
+        "conditions": ["가격·수량·구매 조건은 공식 발표에서 확인해 주세요."],
         "visual": VISUAL[category],
         "is_demo": False,
         "publish_status": "published",
