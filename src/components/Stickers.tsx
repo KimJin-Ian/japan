@@ -36,7 +36,8 @@ export function CheckingSticker({ short = false }: { short?: boolean }) {
 /** 카드·상세 공통: 상품의 한정 상태를 스티커로 */
 export function LimitedStickers({ product, max, withJa }: { product: Product; max?: number; withJa?: boolean }) {
   const { status, types } = product.limited;
-  if (status === "checking") return <CheckingSticker short={withJa === false} />;
+  // 확인되지 않은 것은 라벨을 붙이지 않는다
+  if (status === "checking") return null;
   if (status === "none") return <span className="sticker bg-cream-deep text-ink-soft">상시 판매</span>;
   const shown = max ? types.slice(0, max) : types;
   return (
@@ -58,7 +59,7 @@ export function StatusSticker({ product }: { product: Product }) {
 export function KrSticker({ product }: { product: Product }) {
   if (product.krOfficial === "no") return <span className="sticker bg-pink text-[#a8475a]">한국 미출시</span>;
   if (product.krOfficial === "yes") return <span className="sticker bg-cream-deep text-ink-soft">한국 판매 있음</span>;
-  return <span className="sticker border border-dashed border-latte bg-white text-ink-soft">한국 판매 확인 중</span>;
+  return null;
 }
 
 const SCOPE: Record<KrScope, { label: string; cls: string }> = {

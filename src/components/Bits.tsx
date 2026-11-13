@@ -115,6 +115,9 @@ export function Footer() {
             <Link href="/brands">브랜드</Link>
           </li>
           <li>
+            <Link href="/news">일반 뉴스</Link>
+          </li>
+          <li>
             <Link href="/saved">관심 상품</Link>
           </li>
         </ul>

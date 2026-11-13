@@ -23,9 +23,12 @@ const Icon = ({ d, size = 22 }: { d: string; size?: number }) => (
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-1.5" aria-label="JAPAN FINDS 홈">
-      <span className="grid h-8 w-8 -rotate-6 place-items-center rounded-[10px] bg-coral font-maru text-[15px] font-black text-white shadow-[0_2px_0_#c9483a]">
-        見
-      </span>
+      <svg viewBox="0 0 64 64" className="h-8 w-8 -rotate-6 drop-shadow-[0_2px_0_#c9483a]" aria-hidden>
+        <rect width="64" height="64" rx="15" fill="#f0705f" />
+        <circle cx="45" cy="17.5" r="9.5" fill="#fff0b8" />
+        <path d="M5.8 51.2 23.8 25.6h10l18 25.6z" fill="#fff" />
+        <rect x="6.4" y="50" width="47.4" height="3.8" rx="1.9" fill="#fff" />
+      </svg>
       <span className="font-maru text-[17px] font-black tracking-tight text-ink">
         JAPAN <span className="text-coral-deep">FINDS</span>
       </span>
@@ -82,6 +85,9 @@ export function Header() {
           <Link href="/brands" className="rounded-full px-3 py-2 hover:bg-cream-deep">
             브랜드
           </Link>
+          <Link href="/news" className="rounded-full px-3 py-2 hover:bg-cream-deep">
+            뉴스
+          </Link>
         </nav>
         <Link href="/products" aria-label="검색" className="ml-auto grid h-11 w-11 place-items-center rounded-full text-ink-soft md:hidden">
           <Icon d={I.search} />
@@ -108,7 +114,7 @@ export function Header() {
 
 const TABS = [
   { href: "/", label: "홈", d: I.home, match: (p: string) => p === "/" },
-  { href: "/products", label: "소식", d: I.search, match: (p: string) => ["/products", "/category", "/brand", "/collab"].some((x) => p.startsWith(x)) },
+  { href: "/products", label: "소식", d: I.search, match: (p: string) => ["/products", "/category", "/brand", "/collab", "/news"].some((x) => p.startsWith(x)) },
   { href: "/schedule", label: "캘린더", d: I.cal, match: (p: string) => p.startsWith("/schedule") },
   { href: "/popup", label: "팝업", d: I.shop, match: (p: string) => p.startsWith("/popup") },
   { href: "/saved", label: "관심", d: I.heart, match: (p: string) => p.startsWith("/saved") },

@@ -9,7 +9,7 @@
   ファッションプレス, 電撃ホビーウェブ 등)은 넣지 않는다.
 
 지키는 것:
-  - 소스당 요청 1회. 기사 페이지는 열지 않는다. 제목과 짧은 발췌, 피드가 항목과 함께 주는 대표 이미지 주소만 저장한다.
+  - 소스당 요청 1회. 기사 페이지는 열지 않는다. 피드에 들어 있는 모든 글의 제목·글 내용·대표 이미지 주소를 저장한다(키워드로 거르지 않는다).
     이미지 파일은 내려받거나 잘라서 다시 올리지 않고, 원래 주소를 그대로 가리킨다.
   - 후보는 product_candidates 에 '검수 대기'로 들어갈 뿐, 게시는 관리자가 결정한다.
   - 같은 주소는 한 번만 들어간다(source_url_hash 유니크).
@@ -37,15 +37,8 @@ from datetime import datetime, timezone
 
 USER_AGENT = "japan-finds-collector/0.2 (daily feed reader)"
 
-# 제목·발췌에 하나라도 있으면 후보로 본다
+# 제목에 있으면 태그로 남기는 표기(거르는 데 쓰지 않는다)
 KEYWORDS = ["日本限定", "店舗限定", "地域限定", "期間限定", "数量限定", "限定", "ポップアップ", "POP UP", "POPUP", "POP-UP", "コラボ", "ご当地"]
-# 소비자 상품이 아닌 글을 거르는 말 (제목 기준)
-EXCLUDE = [
-    "セミナー", "ウェビナー", "採用", "決算", "資金調達", "業務提携", "導入事例", "調査結果", "法人向け", "不動産", "投資",
-    "ブラックフライデー", "セール", "クーポン", "割引", "OFF", "無料", "宿泊", "プラン", "コース", "食べ放題", "ビュッフェ",
-    "アプリ", "ゲーム内", "ガチャ開催", "配信開始", "事前登録", "NFT", "講座", "イベント開催", "ツアー", "求人",
-]
-
 NS = {
     "rss": "http://purl.org/rss/1.0/",
     "dc": "http://purl.org/dc/elements/1.1/",
@@ -58,13 +51,11 @@ SOURCES = [
     {"key": "prtimes", "name": "PR TIMES", "target": "PR TIMES 뉴스 사이트맵 · 키워드 限定/ポップアップ/コラボ", "url": "https://prtimes.jp/sitemap-news.xml"},
     {"key": "atpress", "name": "@Press", "target": "@Press 보도자료 RSS", "url": "https://www.atpress.ne.jp/rss/index.rdf"},
     {"key": "sej", "name": "세븐일레븐 뉴스릴리스", "target": "세븐일레븐 뉴스릴리스 RSS", "url": "https://www.sej.co.jp/rss/news_release.xml"},
-    # 브랜드 공식 피드는 글 전체가 그 브랜드 소식이라 키워드로 거르지 않는다(all)
-    {"key": "miffy", "name": "미피 공식", "target": "미피(dickbruna.jp) RSS", "url": "https://dickbruna.jp/feed/", "all": True},
-    {"key": "snoopytown", "name": "스누피타운숍", "target": "스누피타운숍 RSS", "url": "https://town.snoopy.co.jp/feed", "all": True},
-    {"key": "snoopy", "name": "스누피 공식", "target": "스누피 공식 RSS", "url": "https://www.snoopy.co.jp/feed/", "all": True},
-    {"key": "kitan", "name": "키탄클럽", "target": "키탄클럽(가챠) RSS", "url": "https://kitan.jp/feed/", "all": True},
-    {"key": "jumpshop", "name": "점프숍", "target": "점프숍 블로그 Atom", "url": "https://jumpshop-benelic.com/blogs/news.atom", "all": True},
-    # 매체 피드(2차 출처)는 키워드에 걸린 글만
+    {"key": "miffy", "name": "미피 공식", "target": "미피(dickbruna.jp) RSS", "url": "https://dickbruna.jp/feed/"},
+    {"key": "snoopytown", "name": "스누피타운숍", "target": "스누피타운숍 RSS", "url": "https://town.snoopy.co.jp/feed"},
+    {"key": "snoopy", "name": "스누피 공식", "target": "스누피 공식 RSS", "url": "https://www.snoopy.co.jp/feed/"},
+    {"key": "kitan", "name": "키탄클럽", "target": "키탄클럽(가챠) RSS", "url": "https://kitan.jp/feed/"},
+    {"key": "jumpshop", "name": "점프숍", "target": "점프숍 블로그 Atom", "url": "https://jumpshop-benelic.com/blogs/news.atom"},
     {"key": "gamewatch", "name": "GAME Watch", "target": "GAME Watch RSS", "url": "https://game.watch.impress.co.jp/data/rss/1.0/gmw/feed.rdf", "no_image": True},
     {"key": "hobbywatch", "name": "HOBBY Watch", "target": "HOBBY Watch RSS", "url": "https://hobby.watch.impress.co.jp/data/rss/1.0/hbw/feed.rdf", "no_image": True},
     {"key": "animeanime", "name": "アニメ！アニメ！", "target": "アニメ！アニメ！ RSS", "url": "https://animeanime.jp/rss20/index.rdf"},
@@ -124,7 +115,7 @@ def parse(xml: bytes) -> list[dict]:
             out.append({
                 "title": (e.findtext("atom:title", "", NS) or "").strip(),
                 "link": link.strip(),
-                "excerpt": "",  # 본문(HTML)은 저장하지 않는다
+                "excerpt": (e.findtext("atom:content", "", NS) or e.findtext("atom:summary", "", NS) or "").strip(),
                 "date": (e.findtext("atom:published", "", NS) or e.findtext("atom:updated", "", NS) or "").strip(),
                 "image": first_image(e),
             })
@@ -144,7 +135,7 @@ def parse(xml: bytes) -> list[dict]:
             out.append({
                 "title": (it.findtext("rss:title", "", NS) or "").strip(),
                 "link": (it.findtext("rss:link", "", NS) or "").strip(),
-                "excerpt": (it.findtext("rss:description", "", NS) or "").strip(),
+                "excerpt": (it.findtext("{http://purl.org/rss/1.0/modules/content/}encoded") or it.findtext("rss:description", "", NS) or "").strip(),
                 "date": (it.findtext("dc:date", "", NS) or "").strip(),
                 "image": first_image(it),
             })
@@ -153,7 +144,7 @@ def parse(xml: bytes) -> list[dict]:
             out.append({
                 "title": (it.findtext("title") or "").strip(),
                 "link": (it.findtext("link") or "").strip(),
-                "excerpt": (it.findtext("description") or "").strip(),
+                "excerpt": (it.findtext("{http://purl.org/rss/1.0/modules/content/}encoded") or it.findtext("description") or "").strip(),
                 "date": (it.findtext("pubDate") or "").strip(),
                 "image": first_image(it),
             })
@@ -161,10 +152,8 @@ def parse(xml: bytes) -> list[dict]:
 
 
 def matched_keywords(item: dict) -> list[str]:
-    title = item["title"]
-    if any(x in title for x in EXCLUDE):
-        return []
-    return [k for k in KEYWORDS if k in title]  # 제목에 있을 때만(발췌·키워드 칸은 잡음이 많다)
+    """제목에 들어 있는 한정·팝업·콜라보 표기. 거르는 데 쓰지 않고 태그로만 남긴다."""
+    return [k for k in KEYWORDS if k in item["title"]]
 
 
 def supabase(method: str, path: str, body, prefer: str = "return=minimal"):
@@ -192,14 +181,12 @@ def collect_source(src: dict, dry: bool) -> bool:
         seen: set[str] = set()
         for it in items:
             hits = matched_keywords(it)
-            if src.get("all") and it["title"]:
-                hits = hits or ["공식 피드"]
-            if not hits or not it["link"].startswith("https://") or it["link"] in seen:
+            if not it["title"] or not it["link"].startswith(("https://", "http://")) or it["link"] in seen:
                 continue
             seen.add(it["link"])
             rows.append({
                 "raw_title_ja": it["title"][:500],
-                "raw_excerpt_ja": re.sub(r"<[^>]+>|\s+", " ", it["excerpt"]).strip()[:300] or None,
+                "raw_excerpt_ja": re.sub(r"<[^>]+>|\s+", " ", html.unescape(it["excerpt"])).strip()[:6000] or None,
                 "source_name": src["name"],
                 "source_url": it["link"],
                 "collected_at": started,

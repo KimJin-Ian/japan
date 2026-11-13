@@ -3,24 +3,25 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
 import { PriceCompare } from "@/components/PriceCompare";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductGrid } from "@/components/ProductCard";
 import { ProductVisual } from "@/components/ProductVisual";
 import { RequestCta, ViewTracker } from "@/components/RequestCta";
 import { SaveButton } from "@/components/SaveButton";
-import { DemoSticker, KrSticker, LimitedStickers, StatusSticker } from "@/components/Stickers";
+import { KrSticker, LimitedStickers, StatusSticker } from "@/components/Stickers";
 import { eventsForProduct, jpOffer, related } from "@/lib/catalog";
-import { getEvents, getProduct, getProducts } from "@/lib/data";
+import { getAllProducts, getEvents, getProduct, getProducts } from "@/lib/data";
 import { checkedLabel, dday, longDate, yen } from "@/lib/format";
 import { buildPrefill, gyeomsaReady } from "@/lib/gyeomsa";
 import { SITE_URL } from "@/lib/site";
-import { KR_OFFICIAL, REGIONS, SALE_STATUS, categoryName } from "@/lib/taxonomy";
+import { KR_OFFICIAL, REGIONS, SALE_STATUS, categoryName, categoryShort } from "@/lib/taxonomy";
 import type { Product } from "@/lib/types";
 
 // 등록되지 않은 주소는 서버에서 다 그린 뒤 보낸다(검색엔진이 완성된 HTML을 받도록).
 export const instant = false;
 
 export async function generateStaticParams() {
-  const list = (await getProducts()).map((p) => ({ slug: p.slug }));
+  // 최근 글 200개만 미리 만들어 두고, 나머지는 처음 열릴 때 만든다
+  const list = (await getAllProducts()).slice(0, 200).map((p) => ({ slug: p.slug }));
   // Cache Components 빌드는 최소 1개를 요구한다. 비어 있으면 404로 떨어지는 자리표시자를 넣는다
   return list.length ? list : [{ slug: "none" }];
 }
@@ -29,13 +30,21 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
   const p = await getProduct((await params).slug);
   if (!p) return {};
   const offer = jpOffer(p);
-  const title = `${p.nameKo} — 일본 가격·판매처`;
-  const description = `${p.summary} ${offer ? `일본 현지 가격 ${yen(offer.price)}.` : ""} 살 수 있는 곳: ${p.places.join(", ")}.`;
+  const knownPlace = p.places.length > 0 && !p.places[0].includes("원문에서");
+  const title = `${p.nameKo} — ${p.brand} 일본 ${categoryShort(p.category)} 소식`;
+  const facts = [
+    p.releaseDate ? `발매 ${longDate(p.releaseDate)}` : "",
+    p.endDate ? `${longDate(p.endDate)}까지` : "",
+    offer ? `일본 가격 ${yen(offer.price)}` : "",
+    knownPlace ? `판매처 ${p.places.slice(0, 2).join(", ")}` : "",
+  ].filter(Boolean);
+  const description = `${p.summary.slice(0, 110)}${p.summary.length > 110 ? "…" : ""}${facts.length ? ` (${facts.join(" · ")})` : ""}`;
   return {
     title,
     description,
+    keywords: [p.nameKo, p.brand, `${p.brand} 일본`, `일본 ${categoryShort(p.category)}`, `${REGIONS[p.region]} ${categoryShort(p.category)}`, "일본 한정", ...p.tags.slice(0, 4)],
     alternates: { canonical: `/products/${p.slug}` },
-    openGraph: { title, description, type: "article" },
+    openGraph: { title, description, type: "article", ...(p.imageUrl && { images: [{ url: p.imageUrl, alt: p.nameKo }] }) },
     // 예시 데이터 페이지는 검색에 노출하지 않는다
     robots: p.isDemo ? { index: false, follow: true } : undefined,
   };
@@ -116,7 +125,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
   // 검색·AI 답변용 질문-답변. 화면에 그대로 보이는 내용만 구조화 데이터로 내보낸다.
   const unknownPlace = p.places.length === 0 || p.places[0] === "원문에서 판매처 확인";
   const place = p.places.join(", ");
-  const faq: [string, string][] = [
+  const faq = [
     [
       `${p.nameKo}은(는) 어디서 살 수 있나요?`,
       unknownPlace
@@ -139,9 +148,9 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
         ? "한국 공식 판매처가 있어요."
         : p.krOfficial === "no"
           ? "한국 공식 판매는 없어요. 일본 현지에서 사거나 일본에 가는 사람에게 부탁해야 해요."
-          : "한국 판매 여부는 아직 확인되지 않았어요. 일본 현지 판매 기준으로 정리한 정보예요.",
+          : "",
     ],
-  ];
+  ].filter(([, a]) => a) as [string, string][];
   const ld = (data: object) => <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
 
   return (
@@ -174,19 +183,16 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           </Link>
         </nav>
 
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start lg:gap-10">
-          {/* 이미지 */}
-          <div className="relative lg:sticky lg:top-36">
-            <ProductVisual product={p} className={`aspect-square rounded-[28px] ${ended ? "opacity-70 grayscale-[30%]" : ""}`} />
-            {p.isDemo && <DemoSticker className="absolute left-3 top-3 -rotate-3" />}
-            {!p.isDemo && (
-              <p className="mt-2 text-center text-[11px] text-mute">
-                {p.imageUrl ? `이미지 출처: ${p.sources[0]?.label.replace(" 원문", "") ?? p.brand}` : "카테고리 그림이에요. 실제 상품 모습은 원문에서 확인해 주세요."}
-              </p>
-            )}
-          </div>
+        <div className={p.imageUrl ? "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start lg:gap-10" : "mx-auto max-w-2xl"}>
+          {/* 이미지: 출처가 제공한 사진이 있을 때만 */}
+          {p.imageUrl && (
+            <div className="relative lg:sticky lg:top-36">
+              <ProductVisual product={p} className={`aspect-square rounded-[28px] ${ended ? "opacity-70 grayscale-[30%]" : ""}`} />
+              <p className="mt-2 text-center text-[11px] text-mute">이미지 출처: {p.sources[0]?.label.replace(" 원문", "") ?? p.brand}</p>
+            </div>
+          )}
 
-          <div className="mt-5 lg:mt-0">
+          <div className={p.imageUrl ? "mt-5 lg:mt-0" : ""}>
             {/* 한정 여부를 가장 먼저 */}
             <div className="flex flex-wrap gap-1.5">
               <StatusSticker product={p} />
@@ -242,7 +248,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                   "정해진 날짜 없음"
                 )}
               </Fact>
-              <Fact label="한국에서 살 수 있나요">{KR_OFFICIAL[p.krOfficial]}</Fact>
+              {p.krOfficial !== "unknown" && <Fact label="한국에서 살 수 있나요">{KR_OFFICIAL[p.krOfficial]}</Fact>}
               <div className="col-span-2">
                 <Fact label={`살 수 있는 곳 · ${REGIONS[p.region]}`}>
                   <ul className="space-y-0.5">
@@ -254,16 +260,18 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               </div>
             </dl>
 
-            {/* 한정 근거 */}
+            {/* 한정 근거: 발표에서 확인된 경우에만 */}
+            {p.limited.status === "verified" && (
             <section className="mt-6 rounded-[22px] border-[1.5px] border-dashed border-pink-deep/70 bg-pink/30 p-5">
-              <h2 className="font-display text-[19px] text-ink">
-                {p.limited.status === "verified" ? "왜 한정인가요" : p.limited.status === "checking" ? "한정 여부를 확인하고 있어요" : "한정 상품은 아니에요"}
-              </h2>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-ink-soft">{p.limited.evidence}</p>
-            </section>
+                <h2 className="font-display text-[19px] text-ink">
+                  {p.limited.status === "verified" ? "왜 한정인가요" : p.limited.status === "checking" ? "한정 여부를 확인하고 있어요" : "한정 상품은 아니에요"}
+                </h2>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-ink-soft">{p.limited.evidence}</p>
+              </section>
+            )}
 
             <section className="mt-6">
-              <h2 className="font-display text-[19px] text-ink">사기 전에 알아 둘 것</h2>
+              <h2 className="font-display text-[19px] text-ink">자세한 내용</h2>
               <ul className="mt-2 space-y-1.5 text-[14px] leading-relaxed text-ink-soft">
                 {p.conditions.map((c) => (
                   <li key={c} className="flex gap-2">
@@ -352,13 +360,9 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
       {more.length > 0 && (
         <section className="mx-auto mt-14 max-w-6xl lg:px-4">
           <SectionTitle ja="YOU MAY ALSO LIKE" title="함께 구경하면 좋은 상품" tape="var(--color-peach)" />
-          <ul className="rail">
-            {more.map((q) => (
-              <li key={q.id}>
-                <ProductCard product={q} />
-              </li>
-            ))}
-          </ul>
+          <div className="px-4 lg:px-0">
+            <ProductGrid products={more} />
+          </div>
         </section>
       )}
 

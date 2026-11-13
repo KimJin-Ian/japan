@@ -6,6 +6,7 @@ import { getProducts } from "@/lib/data";
 export const metadata: Metadata = {
   title: "일본 콜라보 한정 아이템",
   description: "브랜드와 캐릭터, 브랜드와 브랜드가 함께 낸 일본 콜라보 상품을 모았어요. 발매일과 판매처를 확인하세요.",
+  keywords: ["일본 콜라보", "일본 콜라보 굿즈", "일본 한정 콜라보", "브랜드 콜라보 일본", "캐릭터 콜라보 일본"],
   alternates: { canonical: "/collab" },
 };
 

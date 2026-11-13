@@ -6,6 +6,7 @@ import { getProducts } from "@/lib/data";
 export const metadata: Metadata = {
   title: "일본 팝업스토어 일정",
   description: "도쿄·오사카 등 일본에서 지금 열리는 팝업스토어와 곧 열리는 팝업을 지역별로 모았어요. 기간과 장소, 한정 상품 소식을 확인하세요.",
+  keywords: ["일본 팝업스토어", "도쿄 팝업스토어", "오사카 팝업스토어", "일본 팝업 일정", "시부야 파르코 팝업", "일본 캐릭터 팝업"],
   alternates: { canonical: "/popup" },
 };
 

@@ -46,7 +46,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-export function Explorer({ products, fixedCategory, brands }: { products: Product[]; fixedCategory?: CategorySlug; brands: { slug: string; name: string }[] }) {
+export function Explorer({ products, fixedCategory }: { products: Product[]; fixedCategory?: CategorySlug; brands?: { slug: string; name: string }[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -57,7 +57,7 @@ export function Explorer({ products, fixedCategory, brands }: { products: Produc
   const limited = (sp.get("limited") ?? "").split(",").filter(Boolean);
   const region = sp.get("region") ?? "";
   const brand = sp.get("brand") ?? "";
-  const kr = sp.get("kr") ?? "";
+  const photo = sp.get("photo") ?? "";
   const price = sp.get("price") ?? "";
   const status = sp.get("status") ?? "";
   const sort = sp.get("sort") ?? "new";
@@ -87,12 +87,11 @@ export function Explorer({ products, fixedCategory, brands }: { products: Produc
     const list = products.filter((p) => {
       if (tokens.length && !tokens.every((t) => haystack(p).includes(t))) return false;
       if (category && p.category !== category) return false;
-      if (limited.includes("checking") && p.limited.status !== "checking") return false;
-      const types = limited.filter((l) => l !== "checking") as LimitedType[];
+      const types = limited as LimitedType[];
       if (types.length && !types.every((t) => p.limited.status === "verified" && p.limited.types.includes(t))) return false;
       if (region && p.region !== region) return false;
       if (brand && p.brandSlug !== brand) return false;
-      if (kr && p.krOfficial !== kr) return false;
+      if (photo && !p.imageUrl) return false;
       if (status ? p.saleStatus !== status : false) return false;
       if (band) {
         const jp = jpPrice(p);
@@ -112,66 +111,69 @@ export function Explorer({ products, fixedCategory, brands }: { products: Produc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products, sp, fixedCategory]);
 
-  const activeCount = [limited.length > 0, region, brand, kr, price, status].filter(Boolean).length;
+  const activeCount = [limited.length > 0, region, brand, photo, price, status].filter(Boolean).length;
   const reset = () => router.replace(q ? `${pathname}?q=${encodeURIComponent(q)}` : pathname, { scroll: false });
+
+  // 실제 데이터에 있는 값만 필터로 보여 준다. 고를 것이 없는 묶음은 통째로 숨긴다.
+  const inScope = fixedCategory ? products.filter((p) => p.category === fixedCategory) : products;
+  const statuses = (["on_sale", "upcoming", "ended"] as const).filter((s) => inScope.some((p) => p.saleStatus === s));
+  const regionOpts = (Object.keys(REGIONS) as RegionSlug[]).filter((r) => r !== "other" && inScope.some((p) => p.region === r));
+  const limitedOpts = (Object.keys(LIMITED) as LimitedType[]).filter((t) => inScope.some((p) => p.limited.status === "verified" && p.limited.types.includes(t)));
+  const priceOpts = PRICE_BANDS.filter((b) => inScope.some((p) => {
+    const jp = jpPrice(p);
+    return jp !== undefined && jp >= b.min && jp <= b.max;
+  }));
+  const hasPhoto = inScope.some((p) => p.imageUrl) && inScope.some((p) => !p.imageUrl);
+  const STATUS_LABEL = { on_sale: "판매·진행 중", upcoming: "곧 시작", ended: "종료" } as const;
 
   const panel = (
     <>
-      <Group title="한정 유형">
-        {(Object.keys(LIMITED) as LimitedType[]).map((t) => (
-          <Chip key={t} on={limited.includes(t)} onClick={() => toggleLimited(t)}>
-            {LIMITED[t].ko}
+      {statuses.length > 1 && (
+        <Group title="진행 상태">
+          {statuses.map((s) => (
+            <Chip key={s} on={status === s} onClick={() => toggle("status", status, s)}>
+              {STATUS_LABEL[s]}
+            </Chip>
+          ))}
+        </Group>
+      )}
+      {regionOpts.length > 1 && (
+        <Group title="일본 지역">
+          {regionOpts.map((r) => (
+            <Chip key={r} on={region === r} onClick={() => toggle("region", region, r)}>
+              {REGIONS[r]}
+            </Chip>
+          ))}
+        </Group>
+      )}
+      {limitedOpts.length > 0 && (
+        <Group title="한정 유형">
+          {limitedOpts.map((t) => (
+            <Chip key={t} on={limited.includes(t)} onClick={() => toggleLimited(t)}>
+              {LIMITED[t].ko}
+            </Chip>
+          ))}
+        </Group>
+      )}
+      {priceOpts.length > 1 && (
+        <Group title="일본 가격대">
+          {priceOpts.map((b) => (
+            <Chip key={b.key} on={price === b.key} onClick={() => toggle("price", price, b.key)}>
+              {b.label}
+            </Chip>
+          ))}
+        </Group>
+      )}
+      {hasPhoto && (
+        <Group title="보기">
+          <Chip on={photo === "1"} onClick={() => toggle("photo", photo, "1")}>
+            사진 있는 소식만
           </Chip>
-        ))}
-        <Chip on={limited.includes("checking")} onClick={() => toggleLimited("checking")}>
-          확인 중
-        </Chip>
-      </Group>
-      <Group title="판매 상태">
-        <Chip on={status === "on_sale"} onClick={() => toggle("status", status, "on_sale")}>
-          판매 중
-        </Chip>
-        <Chip on={status === "upcoming"} onClick={() => toggle("status", status, "upcoming")}>
-          곧 출시
-        </Chip>
-        <Chip on={status === "ended"} onClick={() => toggle("status", status, "ended")}>
-          판매 종료
-        </Chip>
-      </Group>
-      <Group title="일본 지역">
-        {(Object.keys(REGIONS) as RegionSlug[]).map((r) => (
-          <Chip key={r} on={region === r} onClick={() => toggle("region", region, r)}>
-            {REGIONS[r]}
-          </Chip>
-        ))}
-      </Group>
-      <Group title="한국 공식 판매">
-        <Chip on={kr === "no"} onClick={() => toggle("kr", kr, "no")}>
-          한국 미출시
-        </Chip>
-        <Chip on={kr === "yes"} onClick={() => toggle("kr", kr, "yes")}>
-          한국 판매 있음
-        </Chip>
-        <Chip on={kr === "unknown"} onClick={() => toggle("kr", kr, "unknown")}>
-          확인 중
-        </Chip>
-      </Group>
-      <Group title="일본 가격대">
-        {PRICE_BANDS.map((b) => (
-          <Chip key={b.key} on={price === b.key} onClick={() => toggle("price", price, b.key)}>
-            {b.label}
-          </Chip>
-        ))}
-      </Group>
-      <Group title="브랜드">
-        {brands.map((b) => (
-          <Chip key={b.slug} on={brand === b.slug} onClick={() => toggle("brand", brand, b.slug)}>
-            {b.name}
-          </Chip>
-        ))}
-      </Group>
+        </Group>
+      )}
     </>
   );
+  const hasPanel = statuses.length > 1 || regionOpts.length > 1 || limitedOpts.length > 0 || priceOpts.length > 1 || hasPhoto;
 
   return (
     <div className="mx-auto max-w-6xl px-4">
@@ -188,10 +190,12 @@ export function Explorer({ products, fixedCategory, brands }: { products: Produc
         </div>
       )}
 
-      <div className="lg:grid lg:grid-cols-[232px_1fr] lg:gap-8">
-        <aside className="hidden lg:block">
-          <div className="card sticky top-32 p-5">{panel}</div>
-        </aside>
+      <div className={hasPanel ? "lg:grid lg:grid-cols-[232px_1fr] lg:gap-8" : ""}>
+        {hasPanel && (
+          <aside className="hidden lg:block">
+            <div className="card sticky top-32 p-5">{panel}</div>
+          </aside>
+        )}
 
         <div>
           <div className="mb-4 flex items-center gap-2">
@@ -199,7 +203,7 @@ export function Explorer({ products, fixedCategory, brands }: { products: Produc
               {q && <b className="text-ink">‘{q}’ </b>}
               상품 <b className="text-coral-deep">{result.length}</b>개
             </p>
-            <button type="button" onClick={() => setSheet(true)} className="btn btn-secondary h-10 px-3.5 text-[13px] lg:hidden">
+            <button type="button" onClick={() => setSheet(true)} className={`btn btn-secondary h-10 px-3.5 text-[13px] lg:hidden ${hasPanel ? "" : "hidden"}`}>
               필터{activeCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-coral px-1 text-[11px] text-white">{activeCount}</span>}
             </button>
             <label className="sr-only" htmlFor="sort">

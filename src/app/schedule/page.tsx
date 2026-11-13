@@ -9,6 +9,7 @@ import type { Product } from "@/lib/types";
 export const metadata: Metadata = {
   title: "일본 발매·팝업 캘린더",
   description: "일본에서 이번 주에 나오는 한정 상품, 곧 열리는 팝업스토어, 곧 끝나는 행사를 날짜순으로 정리했어요.",
+  keywords: ["일본 발매일", "일본 발매 일정", "일본 팝업 일정", "이번 주 일본 신상품", "일본 한정판 발매"],
   alternates: { canonical: "/schedule" },
 };
 

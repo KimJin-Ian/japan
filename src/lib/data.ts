@@ -111,11 +111,21 @@ export async function getToday(): Promise<string> {
   return new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
 }
 
-/** 게시된 상품 전체 (최근 등록순) */
-export async function getProducts(): Promise<Product[]> {
+/** 일반 뉴스 성격의 글에 붙는 태그. 수집기(analyze.py)가 '소비자 상품 아님'으로 본 글에 붙인다 */
+export const NEWS_TAG = "뉴스";
+const isNews = (p: Product) => p.tags.includes(NEWS_TAG);
+
+/** 게시된 글 전체 (상품 소식 + 일반 뉴스). 상세 페이지 조회·사이트맵용 */
+export async function getAllProducts(): Promise<Product[]> {
   setToday(await getToday());
   return cachedProducts();
 }
+
+/** 상품·굿즈·팝업 소식 (최근 등록순). 홈과 목록은 이것만 쓴다 */
+export const getProducts = async () => (await getAllProducts()).filter((p) => !isNews(p));
+
+/** 일반 뉴스 */
+export const getNews = async () => (await getAllProducts()).filter(isNews);
 
 export async function getEvents(): Promise<EventItem[]> {
   setToday(await getToday());
@@ -129,7 +139,7 @@ async function cachedProducts(): Promise<Product[]> {
   if (!dbReady) return PRODUCTS;
   const { data, error } = await publicDb().from("products").select("*, product_offers(*), product_sources(*)")
     .order("published_at", { ascending: false })
-    .limit(1000);
+    .limit(3000);
   if (error) throw new Error(`상품을 불러오지 못했습니다: ${error.message}`);
   return data.map(toProduct);
 }
@@ -162,7 +172,7 @@ export async function getRate(): Promise<{ krwPer100Jpy: number; label: string; 
   return { krwPer100Jpy: Math.round(Number(data[0].rate) * 1000) / 10, label: data[0].source, isDemo: false };
 }
 
-export const getProduct = async (slug: string) => (await getProducts()).find((p) => p.slug === slug);
+export const getProduct = async (slug: string) => (await getAllProducts()).find((p) => p.slug === slug);
 export const getEvent = async (slug: string) => (await getEvents()).find((e) => e.slug === slug);
 
 /* ---------- 관리자 화면 (캐시하지 않음) ---------- */

@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 import { brandsOf } from "@/lib/catalog";
-import { getEvents, getProducts } from "@/lib/data";
+import { getAllProducts, getEvents, getProducts } from "@/lib/data";
 import { SITE_URL } from "@/lib/site";
 import { CATEGORIES } from "@/lib/taxonomy";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, events] = await Promise.all([getProducts(), getEvents()]);
+  const [products, events, everything] = await Promise.all([getProducts(), getEvents(), getAllProducts()]);
   const u = (path: string) => `${SITE_URL}${path}`;
   return [
     { url: u("/") },
@@ -14,10 +14,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: u("/popup") },
     { url: u("/collab") },
     { url: u("/brands") },
+    { url: u("/news") },
     ...CATEGORIES.map((c) => ({ url: u(`/category/${c.slug}`) })),
     ...brandsOf(products).map((b) => ({ url: u(`/brand/${b.slug}`) })),
     // 예시 데이터는 사이트맵에 넣지 않는다. 승인·게시된 실제 상품만 들어간다.
-    ...products
+    ...everything
       .filter((p) => !p.isDemo)
       .map((p) => ({ url: u(`/products/${p.slug}`), lastModified: p.addedAt })),
     ...events

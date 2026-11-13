@@ -12,17 +12,26 @@ const kr = Noto_Sans_KR({ variable: "--font-kr", subsets: ["latin"], weight: ["4
 const display = Jua({ variable: "--font-display", subsets: ["latin"], weight: "400", display: "swap" });
 const maru = Zen_Maru_Gothic({ variable: "--font-maru", subsets: ["latin"], weight: ["500", "700", "900"], display: "swap" });
 
+/** 환경변수에 따옴표나 공백이 같이 들어와도 값만 쓴다 */
+const clean = (v?: string) => v?.trim().replace(/^["']+|["']+$/g, "") || undefined;
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "JAPAN FINDS — 일본에서만 만날 수 있는 특별한 상품", template: "%s | JAPAN FINDS" },
+  title: { default: "일본 한정판·팝업스토어·콜라보 굿즈 소식 | JAPAN FINDS", template: "%s | JAPAN FINDS" },
   description:
-    "일본 한정판, 지역·매장 한정 상품, 팝업 굿즈와 신상품을 공식 출처와 함께 정리해요. 일본 현지 가격과 살 수 있는 곳을 확인하고 마음에 드는 상품을 담아 보세요.",
+    "일본 한정판, 팝업스토어 일정, 콜라보 굿즈, 편의점·브랜드 신상품 소식을 매일 한국어로 정리해요. 발매일, 일본 현지 가격, 판매 매장을 확인하고 일본 여행 쇼핑리스트를 만들어 보세요.",
+  // 사람들이 실제로 검색할 만한 말. (구글은 keywords 를 순위에 쓰지 않으므로 같은 말을 제목·설명·본문에도 담는다)
+  keywords: [
+    "일본 한정판", "일본 한정 굿즈", "일본 팝업스토어", "도쿄 팝업스토어", "오사카 팝업스토어", "일본 콜라보", "일본 콜라보 굿즈",
+    "일본 신상품", "일본 굿즈", "일본 캐릭터 굿즈", "일본 가챠", "일본 편의점 신상", "일본 여행 쇼핑리스트", "일본 쇼핑 추천",
+    "일본 발매일", "일본 한정 상품", "일본 현지 가격", "스누피 일본 굿즈", "미피 일본 굿즈", "점프숍",
+  ],
   openGraph: { type: "website", locale: "ko_KR", siteName: "JAPAN FINDS" },
   alternates: { canonical: "/" },
   // 구글 서치 콘솔 · 네이버 서치어드바이저 소유 확인 값 (Vercel 환경변수로 넣는다)
   verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
-    other: process.env.NAVER_SITE_VERIFICATION ? { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION } : undefined,
+    google: clean(process.env.GOOGLE_SITE_VERIFICATION),
+    other: clean(process.env.NAVER_SITE_VERIFICATION) ? { "naver-site-verification": clean(process.env.NAVER_SITE_VERIFICATION)! } : undefined,
   },
 };
 

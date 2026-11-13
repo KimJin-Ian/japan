@@ -16,7 +16,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,6 +27,11 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
         run: python collector/collect.py
+      - name: PR TIMES 원문에서 본문·대표 이미지 채우기
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: python collector/enrich.py
       - name: Claude 번역·분류·게시
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -34,7 +39,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # 모델을 바꾸려면 저장소 Variables 에 ANALYZE_MODEL 을 넣는다 (예: claude-haiku-5-5)
           ANALYZE_MODEL: ${{ vars.ANALYZE_MODEL || 'claude-opus-5-5' }}
-          ANALYZE_LIMIT: "400"
+          ANALYZE_LIMIT: "4000"
         run: |
           pip install -q anthropic pydantic
           python collector/analyze.py

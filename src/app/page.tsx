@@ -2,7 +2,7 @@ import Link from "next/link";
 import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
 import { SearchBox } from "@/components/Chrome";
 import { CompareTeaser } from "@/components/PriceCompare";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard, ProductRow } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
 import { characterAndGacha, comparable, editorPicks, liveEvents, popupItems, upcoming } from "@/lib/catalog";
 import { getEvents, getProducts } from "@/lib/data";
@@ -21,22 +21,38 @@ const CAT_ICON: Record<CategorySlug, { motif: VisualMotif; tone: Product["visual
   popup: { motif: "stand", tone: "lilac" },
 };
 
+/** 코너 하나: 사진 있는 소식은 카드로 최대 5개, 이어서 글만 있는 소식을 목록으로 최대 4개 */
 function Rail({ products }: { products: Product[] }) {
+  const photos = products.filter((p) => p.imageUrl).slice(0, 5);
+  const texts = products.filter((p) => !p.imageUrl).slice(0, photos.length ? 3 : 5);
   return (
-    <ul className="rail">
-      {products.slice(0, 5).map((p) => (
-        <li key={p.id}>
-          <ProductCard product={p} />
-        </li>
-      ))}
-    </ul>
+    <>
+      {photos.length > 0 && (
+        <ul className="rail">
+          {photos.map((p) => (
+            <li key={p.id}>
+              <ProductCard product={p} />
+            </li>
+          ))}
+        </ul>
+      )}
+      {texts.length > 0 && (
+        <ul className="card mx-4 px-4 lg:mx-0">
+          {texts.map((p) => (
+            <li key={p.id}>
+              <ProductRow product={p} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   );
 }
 
 function Hero({ products }: { products: Product[] }) {
-  // 에디터 추천 3개를 스티커처럼 붙인다. 추천이 모자라면 최근 등록 상품으로 채운다
-  const picks = editorPicks(products);
-  const pile = [...picks, ...products.filter((p) => !picks.includes(p) && p.saleStatus !== "ended")].slice(0, 3);
+  // 사진이 있는 최근 소식 3개를 스티커처럼 붙인다. 3개가 안 되면 그림 영역을 비운다
+  const withPhoto = products.filter((p) => p.imageUrl && p.saleStatus !== "ended").slice(0, 3);
+  const pile = withPhoto.length === 3 ? withPhoto : [];
   const tilt = ["-rotate-6", "rotate-3 translate-y-5", "-rotate-2"];
   const tapes = ["bg-butter", "bg-pink-deep/70", "bg-mint"];
   return (
@@ -69,7 +85,7 @@ function Hero({ products }: { products: Product[] }) {
             ))}
           </ul>
         </div>
-        <div className="relative mx-auto grid w-full max-w-md grid-cols-3 gap-3 px-2 pb-6 lg:max-w-none lg:gap-5">
+        <div className={`relative mx-auto w-full max-w-md grid-cols-3 gap-3 px-2 pb-6 lg:max-w-none lg:gap-5 ${pile.length ? "grid" : "hidden"}`}>
           {pile.map((p, i) => (
             <Link key={p.id} href={`/products/${p.slug}`} className={`card relative block p-1.5 pb-2 ${tilt[i]}`}>
               <span className={`absolute -top-2 left-1/2 h-4 w-12 -translate-x-1/2 -rotate-3 rounded-[2px] opacity-90 ${tapes[i]}`} aria-hidden />
