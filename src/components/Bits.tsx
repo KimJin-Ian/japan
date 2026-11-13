@@ -100,13 +100,19 @@ export function Footer() {
         </p>
         <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-bold text-ink-soft">
           <li>
-            <Link href="/products">전체 상품</Link>
+            <Link href="/products">전체 소식</Link>
           </li>
           <li>
-            <Link href="/schedule">일정·소식</Link>
+            <Link href="/popup">팝업스토어</Link>
           </li>
           <li>
-            <Link href="/compare">가격 비교</Link>
+            <Link href="/collab">콜라보</Link>
+          </li>
+          <li>
+            <Link href="/schedule">캘린더</Link>
+          </li>
+          <li>
+            <Link href="/brands">브랜드</Link>
           </li>
           <li>
             <Link href="/saved">관심 상품</Link>

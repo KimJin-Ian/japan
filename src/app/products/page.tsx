@@ -18,7 +18,7 @@ export default async function ProductsPage() {
     <div className="pb-6 pt-6">
       <div className="mx-auto max-w-6xl px-4">
         <h1 className="font-display text-[28px] text-ink lg:text-[34px]">
-          <span className="tape">구경하기</span>
+          <span className="tape">일본 소식 전체</span>
         </h1>
         <p className="mt-1.5 text-[13px] text-ink-soft">한국어나 일본어 상품명, 브랜드, 캐릭터, 지역 이름으로 찾을 수 있어요.</p>
         <div className="mt-4 md:hidden">

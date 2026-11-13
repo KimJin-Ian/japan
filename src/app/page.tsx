@@ -91,8 +91,8 @@ export default async function Home() {
   // 수집되는 데이터로 채울 수 있는 코너만 둔다. 비어 있는 코너는 보이지 않는다.
   const corners: { ja: string; title: string; note?: string; href: string; tape: string; items: Product[] }[] = [
     { ja: "JUST IN", title: "방금 올라온 일본 소식", note: "일본 발표 최신순", href: "/products", tape: "var(--color-pink)", items: live },
-    { ja: "POP UP", title: "지금 열리는 팝업스토어", note: "기간이 끝나면 살 수 없어요", href: "/category/popup", tape: "var(--color-mint)", items: popupItems(products) },
-    { ja: "COLLABORATION", title: "콜라보 한정 아이템", note: "브랜드 × 캐릭터 · 브랜드 × 브랜드", href: "/products?q=%E3%82%B3%E3%83%A9%E3%83%9C", tape: "var(--color-lilac)", items: live.filter((p) => hasTag(p, "コラボ")) },
+    { ja: "POP UP", title: "지금 열리는 팝업스토어", note: "기간이 끝나면 살 수 없어요", href: "/popup", tape: "var(--color-mint)", items: popupItems(products) },
+    { ja: "COLLABORATION", title: "콜라보 한정 아이템", note: "브랜드 × 캐릭터 · 브랜드 × 브랜드", href: "/collab", tape: "var(--color-lilac)", items: live.filter((p) => hasTag(p, "コラボ")) },
     { ja: "COMING SOON", title: "곧 나오는 것", note: "출시일이 가까운 순", href: "/products?status=upcoming", tape: "var(--color-peach)", items: upcoming(products) },
     {
       ja: "LAST CHANCE",

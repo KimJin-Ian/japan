@@ -17,8 +17,10 @@ export function GET() {
 
 ## 주요 페이지
 - [전체 상품](${SITE_URL}/products): 검색어, 카테고리, 한정 유형, 일본 지역, 가격대로 찾기
-- [일정](${SITE_URL}/schedule): 팝업·발매·응모 일정
-- [가격 비교](${SITE_URL}/compare): 같은 상품임을 확인한 것만 일본·한국 가격 비교
+- [캘린더](${SITE_URL}/schedule): 이번 주에 시작하는 것, 곧 끝나는 것을 날짜순으로
+- [팝업스토어](${SITE_URL}/popup): 지금 열리는 팝업과 곧 열리는 팝업, 지역별
+- [콜라보](${SITE_URL}/collab): 브랜드·캐릭터 협업 한정 상품
+- [브랜드](${SITE_URL}/brands): 브랜드별 소식
 ${CATEGORIES.map((c) => `- [${c.name}](${SITE_URL}/category/${c.slug}): ${c.desc}`).join("\n")}
 - [사이트맵](${SITE_URL}/sitemap.xml)
 

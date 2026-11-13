@@ -10,6 +10,7 @@ const I = {
   search: "M10.5 4a6.5 6.5 0 1 0 4.1 11.6L19.5 20.5 21 19l-4.9-4.9A6.5 6.5 0 0 0 10.5 4zm0 2.2a4.3 4.3 0 1 1 0 8.6 4.3 4.3 0 0 1 0-8.6z",
   cal: "M7 3v2H5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2V3h-2v2H9V3zm-1 7h12v8H6zm2.5 2v2h2v-2z",
   yen: "M7 4l5 7 5-7h2.4l-5 7H18v2h-5v1.5h5v2h-5V20h-2v-3.5H6v-2h5V13H6v-2h3.6l-5-7z",
+  shop: "M4 4h16l1.5 5.5a3 3 0 0 1-2.5 3.4V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.1a3 3 0 0 1-2.5-3.4zm3 9.5V19h4v-4h2v4h4v-5.5a3 3 0 0 1-2.5-1.3 3 3 0 0 1-5 0A3 3 0 0 1 7 13.5z",
   heart: "M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z",
 };
 
@@ -67,13 +68,19 @@ export function Header() {
         </div>
         <nav className="ml-auto hidden items-center gap-1 text-[14px] font-bold text-ink-soft lg:flex">
           <Link href="/products" className="rounded-full px-3 py-2 hover:bg-cream-deep">
-            전체 상품
+            소식
+          </Link>
+          <Link href="/popup" className="rounded-full px-3 py-2 hover:bg-cream-deep">
+            팝업
+          </Link>
+          <Link href="/collab" className="rounded-full px-3 py-2 hover:bg-cream-deep">
+            콜라보
           </Link>
           <Link href="/schedule" className="rounded-full px-3 py-2 hover:bg-cream-deep">
-            일정
+            캘린더
           </Link>
-          <Link href="/compare" className="rounded-full px-3 py-2 hover:bg-cream-deep">
-            가격 비교
+          <Link href="/brands" className="rounded-full px-3 py-2 hover:bg-cream-deep">
+            브랜드
           </Link>
         </nav>
         <Link href="/products" aria-label="검색" className="ml-auto grid h-11 w-11 place-items-center rounded-full text-ink-soft md:hidden">
@@ -101,9 +108,9 @@ export function Header() {
 
 const TABS = [
   { href: "/", label: "홈", d: I.home, match: (p: string) => p === "/" },
-  { href: "/products", label: "탐색", d: I.search, match: (p: string) => p.startsWith("/products") || p.startsWith("/category") || p.startsWith("/brand") },
-  { href: "/schedule", label: "일정", d: I.cal, match: (p: string) => p.startsWith("/schedule") },
-  { href: "/compare", label: "가격비교", d: I.yen, match: (p: string) => p.startsWith("/compare") },
+  { href: "/products", label: "소식", d: I.search, match: (p: string) => ["/products", "/category", "/brand", "/collab"].some((x) => p.startsWith(x)) },
+  { href: "/schedule", label: "캘린더", d: I.cal, match: (p: string) => p.startsWith("/schedule") },
+  { href: "/popup", label: "팝업", d: I.shop, match: (p: string) => p.startsWith("/popup") },
   { href: "/saved", label: "관심", d: I.heart, match: (p: string) => p.startsWith("/saved") },
 ];
 

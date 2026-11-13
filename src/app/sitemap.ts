@@ -11,7 +11,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: u("/") },
     { url: u("/products") },
     { url: u("/schedule") },
-    { url: u("/compare") },
+    { url: u("/popup") },
+    { url: u("/collab") },
+    { url: u("/brands") },
     ...CATEGORIES.map((c) => ({ url: u(`/category/${c.slug}`) })),
     ...brandsOf(products).map((b) => ({ url: u(`/brand/${b.slug}`) })),
     // 예시 데이터는 사이트맵에 넣지 않는다. 승인·게시된 실제 상품만 들어간다.
