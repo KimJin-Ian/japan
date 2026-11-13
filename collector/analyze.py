@@ -40,6 +40,9 @@ import anthropic
 from pydantic import BaseModel, Field
 
 MODEL = os.environ.get("ANALYZE_MODEL", "claude-opus-5-5")
+# Opus·Sonnet·Fable 은 안전 분류기가 거절하면 서버가 다른 모델로 같은 요청을 다시 처리하게 한다.
+# Haiku 는 이 기능을 지원하지 않으므로 넣지 않는다(거절된 묶음은 건너뛰고 다음 실행에서 다시 시도).
+FALLBACK = {} if "haiku" in MODEL else {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
 LIMIT = int(os.environ.get("ANALYZE_LIMIT", "4000"))
 AUTO_PUBLISH = os.environ.get("AUTO_PUBLISH", "1") == "1"
 PUBLISH_ALL = os.environ.get("PUBLISH_ALL", "1") == "1"
@@ -141,9 +144,7 @@ def analyze_batch(client: anthropic.Anthropic, cands: list[dict], today: str) ->
     response = client.beta.messages.parse(
         model=MODEL,
         max_tokens=16000,
-        # 안전 분류기가 거절하면 서버가 다른 모델로 같은 요청을 다시 처리한다
-        betas=["server-side-fallback-2026-07-01"],
-        fallbacks="default",
+        **FALLBACK,
         output_config={"effort": "low"},  # 제목 분류라 깊은 추론이 필요 없다
         system=[{"type": "text", "text": SYSTEM, "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": f"오늘 날짜: {today}\n\n" + "\n".join(lines)}],
