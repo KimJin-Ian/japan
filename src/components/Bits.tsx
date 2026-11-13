@@ -79,11 +79,12 @@ export function EventRow({ event: e }: { event: EventItem }) {
   );
 }
 
+/** 자동 수집 정보임을 알리는 한 줄 안내 */
 export function DemoNotice({ className = "" }: { className?: string }) {
   return (
     <p className={`rounded-2xl border border-dashed border-latte bg-white/70 px-4 py-3 text-[12px] leading-relaxed text-ink-soft ${className}`}>
-      <b className="text-ink">화면 확인용 예시 데이터예요.</b> 브랜드·상품·가격·출처 링크는 모두 지어낸 것이고 실제 상품 정보가 아니에요. 원화 금액은{" "}
-      <RateNote />로 계산했어요.
+      <b className="text-ink">일본 공식 발표와 보도자료를 매일 자동으로 모아 한국어로 정리해요.</b> 사람이 일일이 검수한 정보가 아니라서, 구매 전에는 각 상품의 원문
+      링크에서 가격·기간·판매처를 확인해 주세요. 원화 금액은 <RateNote /> 기준이에요.
     </p>
   );
 }

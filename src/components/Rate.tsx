@@ -1,7 +1,7 @@
 "use client";
 // 환율. 서버(layout)가 exchange_rates 최신 값을 읽어 내려 주고, 화면 어디서나 같은 값으로 원화를 계산한다.
 import { createContext, useContext } from "react";
-import { DEMO_RATE, won } from "@/lib/format";
+import { DEMO_RATE, setToday, won } from "@/lib/format";
 
 export type Rate = {
   krwPer100Jpy: number;
@@ -15,7 +15,9 @@ export const FALLBACK_RATE: Rate = { krwPer100Jpy: DEMO_RATE.krwPer100Jpy, label
 
 const RateContext = createContext<Rate>(FALLBACK_RATE);
 
-export function RateProvider({ rate, children }: { rate: Rate; children: React.ReactNode }) {
+export function RateProvider({ rate, today, children }: { rate: Rate; today: string; children: React.ReactNode }) {
+  // 브라우저 쪽 D-day 계산도 서버와 같은 날짜를 쓰게 한다
+  setToday(today);
   return <RateContext.Provider value={rate}>{children}</RateContext.Provider>;
 }
 

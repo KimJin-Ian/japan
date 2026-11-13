@@ -9,7 +9,9 @@ import { getEvents, getProducts } from "@/lib/data";
 export const instant = false;
 
 export async function generateStaticParams() {
-  return brandsOf(await getProducts()).map((b) => ({ slug: b.slug }));
+  const list = brandsOf(await getProducts()).map((b) => ({ slug: b.slug }));
+  // Cache Components 빌드는 최소 1개를 요구한다. 비어 있으면 404로 떨어지는 자리표시자를 넣는다
+  return list.length ? list : [{ slug: "none" }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/brand/[slug]">): Promise<Metadata> {

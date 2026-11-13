@@ -14,7 +14,9 @@ import type { Product } from "@/lib/types";
 export const instant = false;
 
 export async function generateStaticParams() {
-  return (await getEvents()).map((e) => ({ slug: e.slug }));
+  const list = (await getEvents()).map((e) => ({ slug: e.slug }));
+  // Cache Components 빌드는 최소 1개를 요구한다. 비어 있으면 404로 떨어지는 자리표시자를 넣는다
+  return list.length ? list : [{ slug: "none" }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/schedule/[slug]">): Promise<Metadata> {

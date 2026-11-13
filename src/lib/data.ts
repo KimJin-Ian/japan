@@ -6,7 +6,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cacheLife, cacheTag } from "next/cache";
 import { CANDIDATES, COLLECTION_LOGS, EVENTS, PRODUCTS } from "./demo-data";
-import { DEMO_RATE } from "./format";
+import { DEMO_RATE, setToday } from "./format";
 import type { Candidate, CollectionLog, EventItem, Offer, Product, Source } from "./types";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -103,18 +103,37 @@ const METHOD_LABEL ={ rss: "RSS", api: "API", manual: "수동 등록" } as const
 
 /* ---------- 사용자 화면 (캐시) ---------- */
 
-/** 게시된 상품 전체. 관리자가 승인·수정하면 revalidateTag("products") 로 갱신한다 */
+/** 오늘 날짜(한국 시간, YYYY-MM-DD). 한 시간 단위로 다시 계산한다 */
+export async function getToday(): Promise<string> {
+  "use cache";
+  cacheLife("hours");
+  return new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
+}
+
+/** 게시된 상품 전체 (최근 등록순) */
 export async function getProducts(): Promise<Product[]> {
+  setToday(await getToday());
+  return cachedProducts();
+}
+
+export async function getEvents(): Promise<EventItem[]> {
+  setToday(await getToday());
+  return cachedEvents();
+}
+
+async function cachedProducts(): Promise<Product[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("products");
   if (!dbReady) return PRODUCTS;
-  const { data, error } = await publicDb().from("products").select("*, product_offers(*), product_sources(*)").order("added_at", { ascending: false });
+  const { data, error } = await publicDb().from("products").select("*, product_offers(*), product_sources(*)")
+    .order("published_at", { ascending: false })
+    .limit(1000);
   if (error) throw new Error(`상품을 불러오지 못했습니다: ${error.message}`);
   return data.map(toProduct);
 }
 
-export async function getEvents(): Promise<EventItem[]> {
+async function cachedEvents(): Promise<EventItem[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("events");

@@ -4,8 +4,9 @@ import { SearchBox } from "@/components/Chrome";
 import { CompareTeaser } from "@/components/PriceCompare";
 import { ProductCard } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
-import { characterAndGacha, comparable, editorPicks, liveEvents, newReleases, popupItems, upcoming } from "@/lib/catalog";
+import { characterAndGacha, comparable, editorPicks, liveEvents, popupItems, upcoming } from "@/lib/catalog";
 import { getEvents, getProducts } from "@/lib/data";
+import { SITE_URL } from "@/lib/site";
 import { CATEGORIES } from "@/lib/taxonomy";
 import type { CategorySlug, Product, VisualMotif } from "@/lib/types";
 
@@ -85,8 +86,51 @@ function Hero({ products }: { products: Product[] }) {
 export default async function Home() {
   const [products, allEvents] = await Promise.all([getProducts(), getEvents()]);
   const events = liveEvents(allEvents).slice(0, 4);
+  const live = products.filter((p) => p.saleStatus !== "ended");
+  const hasTag = (p: Product, t: string) => p.tags.some((x) => x.includes(t));
+  // 수집되는 데이터로 채울 수 있는 코너만 둔다. 비어 있는 코너는 보이지 않는다.
+  const corners: { ja: string; title: string; note?: string; href: string; tape: string; items: Product[] }[] = [
+    { ja: "JUST IN", title: "방금 올라온 일본 소식", note: "일본 발표 최신순", href: "/products", tape: "var(--color-pink)", items: live },
+    { ja: "POP UP", title: "지금 열리는 팝업스토어", note: "기간이 끝나면 살 수 없어요", href: "/category/popup", tape: "var(--color-mint)", items: popupItems(products) },
+    { ja: "COLLABORATION", title: "콜라보 한정 아이템", note: "브랜드 × 캐릭터 · 브랜드 × 브랜드", href: "/products?q=%E3%82%B3%E3%83%A9%E3%83%9C", tape: "var(--color-lilac)", items: live.filter((p) => hasTag(p, "コラボ")) },
+    { ja: "COMING SOON", title: "곧 나오는 것", note: "출시일이 가까운 순", href: "/products?status=upcoming", tape: "var(--color-peach)", items: upcoming(products) },
+    {
+      ja: "LAST CHANCE",
+      title: "곧 끝나는 것",
+      note: "판매·행사 종료가 가까운 순",
+      href: "/products?status=on_sale",
+      tape: "var(--color-butter)",
+      items: live.filter((p) => p.saleStatus === "on_sale" && p.endDate).sort((x, y) => (x.endDate ?? "").localeCompare(y.endDate ?? "")),
+    },
+    { ja: "CHARACTER & GACHA", title: "캐릭터 · 가챠", href: "/category/character", tape: "var(--color-pink)", items: characterAndGacha(products) },
+    { ja: "FASHION", title: "패션 · 액세서리", href: "/category/fashion", tape: "var(--color-sky)", items: live.filter((p) => p.category === "fashion") },
+    { ja: "BEAUTY", title: "뷰티 · 화장품", href: "/category/beauty", tape: "var(--color-peach)", items: live.filter((p) => p.category === "beauty") },
+    { ja: "LOCAL", title: "지역 한정 · 먹거리", href: "/category/regional", tape: "var(--color-mint)", items: live.filter((p) => p.category === "regional" || p.category === "living") },
+  ];
+  const picks = editorPicks(products);
+  const compare = comparable(products);
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              { "@type": "Organization", "@id": `${SITE_URL}/#org`, name: "JAPAN FINDS", url: SITE_URL },
+              {
+                "@type": "WebSite",
+                "@id": `${SITE_URL}/#website`,
+                name: "JAPAN FINDS",
+                url: SITE_URL,
+                inLanguage: "ko-KR",
+                publisher: { "@id": `${SITE_URL}/#org` },
+                potentialAction: { "@type": "SearchAction", target: `${SITE_URL}/products?q={search_term_string}`, "query-input": "required name=search_term_string" },
+              },
+            ],
+          }),
+        }}
+      />
       <Hero products={products} />
 
       <div className="mx-auto max-w-6xl space-y-12 pt-8 lg:space-y-16 lg:px-4 lg:pt-12">
@@ -105,52 +149,49 @@ export default async function Home() {
 
         <DemoNotice className="mx-4 lg:mx-0" />
 
-        <section>
-          <SectionTitle ja="PICK UP" title="지금 주목할 일본 한정템" note="에디터가 고른 상품이에요. 판매량 순위가 아니에요." href="/products?sort=new" tape="var(--color-pink)" />
-          <Rail products={editorPicks(products)} />
-        </section>
+        {picks.length > 0 && (
+          <section>
+            <SectionTitle ja="PICK UP" title="지금 주목할 일본 한정템" note="에디터가 고른 상품이에요. 판매량 순위가 아니에요." href="/products" tape="var(--color-pink)" />
+            <Rail products={picks} />
+          </section>
+        )}
 
-        <section>
-          <SectionTitle ja="NEW ARRIVAL" title="최근 출시된 신상품" note="최근 30일 안에 일본에서 나온 상품" href="/products?sort=release" />
-          <Rail products={newReleases(products)} />
-        </section>
+        {events.length > 0 && (
+          <section className="gingham border-y border-line/70 py-8 lg:rounded-[28px] lg:border lg:px-6">
+            <SectionTitle ja="SCHEDULE" title="놓치면 아쉬운 일정" note="팝업 · 발매 · 응모 마감을 날짜순으로" href="/schedule" tape="var(--color-mint)" />
+            <ul className="grid gap-3 px-4 md:grid-cols-2 lg:px-0">
+              {events.map((e) => (
+                <li key={e.id}>
+                  <EventRow event={e} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-        <section className="gingham border-y border-line/70 py-8 lg:rounded-[28px] lg:border lg:px-6">
-          <SectionTitle ja="SCHEDULE" title="놓치면 아쉬운 일정" note="팝업 · 발매 · 응모 마감을 날짜순으로" href="/schedule" tape="var(--color-mint)" />
-          <ul className="grid gap-3 px-4 md:grid-cols-2 lg:px-0">
-            {events.map((e) => (
-              <li key={e.id}>
-                <EventRow event={e} />
-              </li>
-            ))}
-          </ul>
-        </section>
+        {corners
+          .filter((c) => c.items.length > 0)
+          .map((c) => (
+            <section key={c.ja}>
+              <SectionTitle ja={c.ja} title={c.title} note={c.note} href={c.href} tape={c.tape} />
+              <Rail products={c.items} />
+            </section>
+          ))}
 
-        <section>
-          <SectionTitle ja="CHARACTER & GACHA" title="캐릭터 · 가챠 새 소식" note="최근 등록순" href="/products?category=character" tape="var(--color-lilac)" />
-          <Rail products={characterAndGacha(products)} />
-        </section>
+        {compare.length > 0 && (
+          <section>
+            <SectionTitle ja="PRICE CHECK" title="일본 현지 가격으로 보기" note="같은 상품·같은 용량임을 확인한 것만 비교해요" href="/compare" tape="var(--color-sky)" />
+            <ul className="grid gap-3 px-4 md:grid-cols-3 lg:px-0">
+              {compare.map((p) => (
+                <li key={p.id}>
+                  <CompareTeaser product={p} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-        <section>
-          <SectionTitle ja="POP UP" title="팝업스토어에서만 파는 것" note="기간이 끝나면 살 수 없어요" href="/category/popup" tape="var(--color-mint)" />
-          <Rail products={popupItems(products)} />
-        </section>
-
-        <section>
-          <SectionTitle ja="COMING SOON" title="곧 출시되는 상품" note="출시일이 가까운 순" href="/products?status=upcoming" tape="var(--color-peach)" />
-          <Rail products={upcoming(products)} />
-        </section>
-
-        <section>
-          <SectionTitle ja="PRICE CHECK" title="일본 현지 가격으로 보기" note="같은 상품·같은 용량임을 확인한 것만 비교해요" href="/compare" tape="var(--color-sky)" />
-          <ul className="grid gap-3 px-4 md:grid-cols-3 lg:px-0">
-            {comparable(products).map((p) => (
-              <li key={p.id}>
-                <CompareTeaser product={p} />
-              </li>
-            ))}
-          </ul>
-        </section>
+        {products.length === 0 && <p className="card dots mx-4 px-6 py-14 text-center text-[14px] text-ink-soft lg:mx-0">아직 올라온 소식이 없어요. 매일 아침 새 소식을 모아 올려요.</p>}
       </div>
     </>
   );

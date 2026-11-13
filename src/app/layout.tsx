@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Header, TabBar } from "@/components/Chrome";
 import { Footer } from "@/components/Bits";
 import { RateProvider } from "@/components/Rate";
-import { getRate } from "@/lib/data";
+import { getRate, getToday } from "@/lib/data";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -18,19 +18,25 @@ export const metadata: Metadata = {
   description:
     "일본 한정판, 지역·매장 한정 상품, 팝업 굿즈와 신상품을 공식 출처와 함께 정리해요. 일본 현지 가격과 살 수 있는 곳을 확인하고 마음에 드는 상품을 담아 보세요.",
   openGraph: { type: "website", locale: "ko_KR", siteName: "JAPAN FINDS" },
+  alternates: { canonical: "/" },
+  // 구글 서치 콘솔 · 네이버 서치어드바이저 소유 확인 값 (Vercel 환경변수로 넣는다)
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.NAVER_SITE_VERIFICATION ? { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION } : undefined,
+  },
 };
 
 export const viewport: Viewport = { themeColor: "#fffaf2", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const rate = await getRate();
+  const [rate, today] = await Promise.all([getRate(), getToday()]);
   return (
     <html lang="ko" className={`${kr.variable} ${display.variable} ${maru.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Suspense>
           <Header />
         </Suspense>
-        <RateProvider rate={rate}>
+        <RateProvider rate={rate} today={today}>
           <main className="flex-1">{children}</main>
         </RateProvider>
         <Footer />

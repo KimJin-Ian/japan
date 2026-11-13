@@ -1,10 +1,12 @@
 """JAPAN FINDS 수집기 — 하루 1회 실행.
 
-읽는 곳(모두 키 없이 공개된 공식 피드, docs/09_소스_실검증.md 기준):
-  - PR TIMES 뉴스 사이트맵  : 하루치 보도자료 전량의 제목·주소
-  - 세븐일레븐 뉴스릴리스 RSS, 미피 공식 RSS
-  - GAME Watch, HOBBY Watch RSS (2차 출처 — 후보 발견용)
-  - Frankfurter 환율 API     : JPY→KRW (전 영업일 ECB 기준)
+읽는 곳(모두 키 없이 공개된 피드, docs/09_소스_실검증.md 기준. 아래 SOURCES 목록 참고):
+  - 보도자료: PR TIMES 뉴스 사이트맵(하루치 전량), @Press, 세븐일레븐 뉴스릴리스
+  - 브랜드 공식: 미피, 스누피타운숍, 스누피, 키탄클럽, 점프숍
+  - 매체(2차 출처): GAME Watch, HOBBY Watch, アニメ！アニメ！, FASHIONSNAP, ホビージャパン, Walkerplus
+  - Frankfurter 환율 API: JPY→KRW (전 영업일 ECB 기준)
+  약관이 자동 수집을 금지하거나 robots.txt 가 막은 곳(포켓몬센터, 치이카와 마켓, 가샤폰,
+  ファッションプレス, 電撃ホビーウェブ 등)은 넣지 않는다.
 
 지키는 것:
   - 소스당 요청 1회. 기사 본문·이미지는 가져오지 않는다. 제목과 짧은 발췌만 저장한다.
@@ -23,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -46,14 +49,26 @@ NS = {
     "dc": "http://purl.org/dc/elements/1.1/",
     "sm": "http://www.sitemaps.org/schemas/sitemap/0.9",
     "news": "http://www.google.com/schemas/sitemap-news/0.9",
+    "atom": "http://www.w3.org/2005/Atom",
 }
 
 SOURCES = [
-    {"key": "prtimes", "name": "PR TIMES", "target": "PR TIMES 뉴스 사이트맵 · 키워드 限定/ポップアップ/コラボ", "url": "https://prtimes.jp/sitemap-news.xml", "format": "news_sitemap"},
-    {"key": "sej", "name": "세븐일레븐 뉴스릴리스", "target": "세븐일레븐 뉴스릴리스 RSS", "url": "https://www.sej.co.jp/rss/news_release.xml", "format": "rss2"},
-    {"key": "miffy", "name": "미피 공식", "target": "미피(dickbruna.jp) RSS", "url": "https://dickbruna.jp/feed/", "format": "rss2"},
-    {"key": "gamewatch", "name": "GAME Watch", "target": "GAME Watch RSS", "url": "https://game.watch.impress.co.jp/data/rss/1.0/gmw/feed.rdf", "format": "rss1"},
-    {"key": "hobbywatch", "name": "HOBBY Watch", "target": "HOBBY Watch RSS", "url": "https://hobby.watch.impress.co.jp/data/rss/1.0/hbw/feed.rdf", "format": "rss1"},
+    {"key": "prtimes", "name": "PR TIMES", "target": "PR TIMES 뉴스 사이트맵 · 키워드 限定/ポップアップ/コラボ", "url": "https://prtimes.jp/sitemap-news.xml"},
+    {"key": "atpress", "name": "@Press", "target": "@Press 보도자료 RSS", "url": "https://www.atpress.ne.jp/rss/index.rdf"},
+    {"key": "sej", "name": "세븐일레븐 뉴스릴리스", "target": "세븐일레븐 뉴스릴리스 RSS", "url": "https://www.sej.co.jp/rss/news_release.xml"},
+    # 브랜드 공식 피드는 글 전체가 그 브랜드 소식이라 키워드로 거르지 않는다(all)
+    {"key": "miffy", "name": "미피 공식", "target": "미피(dickbruna.jp) RSS", "url": "https://dickbruna.jp/feed/", "all": True},
+    {"key": "snoopytown", "name": "스누피타운숍", "target": "스누피타운숍 RSS", "url": "https://town.snoopy.co.jp/feed", "all": True},
+    {"key": "snoopy", "name": "스누피 공식", "target": "스누피 공식 RSS", "url": "https://www.snoopy.co.jp/feed/", "all": True},
+    {"key": "kitan", "name": "키탄클럽", "target": "키탄클럽(가챠) RSS", "url": "https://kitan.jp/feed/", "all": True},
+    {"key": "jumpshop", "name": "점프숍", "target": "점프숍 블로그 Atom", "url": "https://jumpshop-benelic.com/blogs/news.atom", "all": True},
+    # 매체 피드(2차 출처)는 키워드에 걸린 글만
+    {"key": "gamewatch", "name": "GAME Watch", "target": "GAME Watch RSS", "url": "https://game.watch.impress.co.jp/data/rss/1.0/gmw/feed.rdf"},
+    {"key": "hobbywatch", "name": "HOBBY Watch", "target": "HOBBY Watch RSS", "url": "https://hobby.watch.impress.co.jp/data/rss/1.0/hbw/feed.rdf"},
+    {"key": "animeanime", "name": "アニメ！アニメ！", "target": "アニメ！アニメ！ RSS", "url": "https://animeanime.jp/rss20/index.rdf"},
+    {"key": "fashionsnap", "name": "FASHIONSNAP", "target": "FASHIONSNAP RSS", "url": "https://www.fashionsnap.com/rss.xml"},
+    {"key": "hjweb", "name": "ホビージャパンウェブ", "target": "ホビージャパンウェブ RSS", "url": "https://hjweb.jp/feed/"},
+    {"key": "walkerplus", "name": "Walkerplus", "target": "Walkerplus RSS", "url": "https://www.walkerplus.com/rss/"},
 ]
 RATE_URL = "https://api.frankfurter.dev/v1/latest?base=JPY&symbols=KRW"
 
@@ -77,11 +92,22 @@ def fetch(url: str, retries: int = 3) -> tuple[bytes, int]:
     raise RuntimeError(f"{retries}회 재시도 후에도 받지 못함: {last}")
 
 
-def parse(xml: bytes, fmt: str) -> list[dict]:
-    """피드 형식에 관계없이 [{title, link, excerpt, date}] 로 맞춘다."""
+def parse(xml: bytes) -> list[dict]:
+    """피드 형식(뉴스 사이트맵 · RSS 1.0 · RSS 2.0 · Atom)을 알아서 가려 [{title, link, excerpt, date}] 로 맞춘다."""
     root = ET.fromstring(xml)
+    tag = root.tag.rsplit("}", 1)[-1]
+    fmt = {"urlset": "news_sitemap", "RDF": "rss1", "feed": "atom"}.get(tag, "rss2")
     out: list[dict] = []
-    if fmt == "news_sitemap":
+    if fmt == "atom":
+        for e in root.findall("atom:entry", NS):
+            link = next((l.get("href", "") for l in e.findall("atom:link", NS) if l.get("rel", "alternate") == "alternate"), "")
+            out.append({
+                "title": (e.findtext("atom:title", "", NS) or "").strip(),
+                "link": link.strip(),
+                "excerpt": "",  # 본문(HTML)은 저장하지 않는다
+                "date": (e.findtext("atom:published", "", NS) or e.findtext("atom:updated", "", NS) or "").strip(),
+            })
+    elif fmt == "news_sitemap":
         for u in root.findall("sm:url", NS):
             n = u.find("news:news", NS)
             if n is None:
@@ -138,17 +164,19 @@ def collect_source(src: dict, dry: bool) -> bool:
     rows: list[dict] = []
     try:
         xml, log["retries"] = fetch(src["url"])
-        items = parse(xml, src["format"])
+        items = parse(xml)
         log["found"] = len(items)
         seen: set[str] = set()
         for it in items:
             hits = matched_keywords(it)
+            if src.get("all") and it["title"]:
+                hits = hits or ["공식 피드"]
             if not hits or not it["link"].startswith("https://") or it["link"] in seen:
                 continue
             seen.add(it["link"])
             rows.append({
                 "raw_title_ja": it["title"][:500],
-                "raw_excerpt_ja": it["excerpt"][:300] or None,
+                "raw_excerpt_ja": re.sub(r"<[^>]+>|\s+", " ", it["excerpt"]).strip()[:300] or None,
                 "source_name": src["name"],
                 "source_url": it["link"],
                 "collected_at": started,
@@ -207,7 +235,7 @@ def collect_rate(dry: bool) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="DB에 쓰지 않고 결과만 출력")
-    ap.add_argument("--only", help="이 key 의 소스만 실행 (prtimes, sej, miffy, gamewatch, hobbywatch, rate)")
+    ap.add_argument("--only", help="이 key 의 소스만 실행 (예: prtimes, kitan, rate)")
     args = ap.parse_args()
 
     results: list[bool] = []

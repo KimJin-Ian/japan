@@ -20,7 +20,9 @@ import type { Product } from "@/lib/types";
 export const instant = false;
 
 export async function generateStaticParams() {
-  return (await getProducts()).map((p) => ({ slug: p.slug }));
+  const list = (await getProducts()).map((p) => ({ slug: p.slug }));
+  // Cache Components 빌드는 최소 1개를 요구한다. 비어 있으면 404로 떨어지는 자리표시자를 넣는다
+  return list.length ? list : [{ slug: "none" }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
@@ -48,7 +50,10 @@ function waysToGet(p: Product) {
     {
       title: "일본에 가서 직접 사기",
       ok: true,
-      body: `${p.places[0]}${p.places.length > 1 ? ` 등 ${p.places.length}곳` : ""}에서 살 수 있어요.`,
+      body:
+        p.places.length === 0 || p.places[0] === "원문에서 판매처 확인"
+          ? "판매 매장은 원문에서 확인해 주세요."
+          : `${p.places[0]}${p.places.length > 1 ? ` 등 ${p.places.length}곳` : ""}에서 살 수 있어요.`,
     },
     {
       title: "일본 온라인몰에서 한국으로 받기",
@@ -107,10 +112,56 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
     }),
   };
 
+  // 검색·AI 답변용 질문-답변. 화면에 그대로 보이는 내용만 구조화 데이터로 내보낸다.
+  const auto = p.sources.length > 0 && p.sources.every((s) => !s.verified);
+  const unknownPlace = p.places.length === 0 || p.places[0] === "원문에서 판매처 확인";
+  const place = p.places.join(", ");
+  const faq: [string, string][] = [
+    [
+      `${p.nameKo}은(는) 어디서 살 수 있나요?`,
+      unknownPlace
+        ? "판매 매장은 발표 제목에서 확인되지 않았어요. 아래 원문 링크에서 판매처를 확인해 주세요."
+        : `${REGIONS[p.region]} 기준으로 ${place}에서 판매한다고 안내돼요. 정확한 매장과 재고는 공식 발표에서 확인해 주세요.`,
+    ],
+    [
+      "언제 나오나요? 언제까지 파나요?",
+      `${p.releaseDate ? `${longDate(p.releaseDate)}에 ${p.saleStatus === "upcoming" ? "나올 예정이에요" : "나왔어요"}.` : "출시일은 발표 제목에서 확인되지 않았어요."} ${
+        p.endDate ? `${longDate(p.endDate)}까지 판매해요.` : "종료일은 정해지지 않았거나 발표되지 않았어요."
+      }`,
+    ],
+    [
+      "가격은 얼마인가요?",
+      offer ? `일본 현지 가격은 ${yen(offer.price)}이에요. 배송비와 세금, 대행 수수료는 포함하지 않은 값이에요.` : "가격은 아직 확인되지 않았어요. 공식 발표에서 확인해 주세요.",
+    ],
+    [
+      "한국에서도 살 수 있나요?",
+      p.krOfficial === "yes"
+        ? "한국 공식 판매처가 있어요."
+        : p.krOfficial === "no"
+          ? "한국 공식 판매는 없어요. 일본 현지에서 사거나 일본에 가는 사람에게 부탁해야 해요."
+          : "한국 판매 여부는 아직 확인되지 않았어요. 일본 현지 판매 기준으로 정리한 정보예요.",
+    ],
+  ];
+  const ld = (data: object) => <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
+
   return (
     <article className="pb-28">
       <ViewTracker productId={p.id} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      {ld(jsonLd)}
+      {ld({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "홈", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: categoryName(p.category), item: `${SITE_URL}/category/${p.category}` },
+          { "@type": "ListItem", position: 3, name: p.nameKo, item: `${SITE_URL}/products/${p.slug}` },
+        ],
+      })}
+      {ld({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+      })}
 
       <div className="mx-auto max-w-6xl px-4 pt-4">
         <nav aria-label="현재 위치" className="mb-3 text-[12px] text-mute">
@@ -128,6 +179,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           <div className="relative lg:sticky lg:top-36">
             <ProductVisual product={p} className={`aspect-square rounded-[28px] ${ended ? "opacity-70 grayscale-[30%]" : ""}`} />
             {p.isDemo && <DemoSticker className="absolute left-3 top-3 -rotate-3" />}
+            {!p.isDemo && <p className="mt-2 text-center text-[11px] text-mute">카테고리 그림이에요. 실제 상품 모습은 원문에서 확인해 주세요.</p>}
           </div>
 
           <div className="mt-5 lg:mt-0">
@@ -136,6 +188,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               <StatusSticker product={p} />
               <LimitedStickers product={p} />
               <KrSticker product={p} />
+              {auto && <span className="sticker border border-dashed border-latte bg-white text-ink-soft">자동 수집 · 검수 전</span>}
             </div>
 
             <h1 className="mt-3 font-display text-[27px] leading-[1.25] text-ink lg:text-[34px]">{p.nameKo}</h1>
@@ -260,6 +313,18 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 </ul>
               </section>
             )}
+
+            <section className="mt-8">
+              <h2 className="font-display text-[19px] text-ink">자주 묻는 질문</h2>
+              <dl className="mt-2 divide-y divide-line rounded-2xl bg-white px-4 shadow-[var(--shadow-soft)]">
+                {faq.map(([q, a]) => (
+                  <div key={q} className="py-3.5">
+                    <dt className="text-[14px] font-bold text-ink">{q}</dt>
+                    <dd className="mt-1 text-[13px] leading-relaxed text-ink-soft">{a}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
 
             <section className="mt-8">
               <h2 className="font-display text-[19px] text-ink">정보 출처</h2>
