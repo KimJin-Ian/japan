@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { DemoNotice, EVENT_KIND } from "@/components/Bits";
 import { ProductCard } from "@/components/ProductCard";
 import { ScopeSticker } from "@/components/Stickers";
-import { allEvents, eventKeyDate, eventPhase, getEvent, getProduct } from "@/lib/catalog";
+import { eventKeyDate, eventPhase } from "@/lib/catalog";
+import { getEvent, getEvents, getProducts } from "@/lib/data";
 import { checkedLabel, dday, longDate } from "@/lib/format";
 import { REGIONS } from "@/lib/taxonomy";
 import type { Product } from "@/lib/types";
@@ -12,12 +13,12 @@ import type { Product } from "@/lib/types";
 // 등록되지 않은 주소는 서버에서 다 그린 뒤 보낸다(검색엔진이 완성된 HTML을 받도록).
 export const instant = false;
 
-export function generateStaticParams() {
-  return allEvents().map((e) => ({ slug: e.slug }));
+export async function generateStaticParams() {
+  return (await getEvents()).map((e) => ({ slug: e.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/schedule/[slug]">): Promise<Metadata> {
-  const e = getEvent((await params).slug);
+  const e = await getEvent((await params).slug);
   if (!e) return {};
   return { title: e.titleKo, description: e.summary, alternates: { canonical: `/schedule/${e.slug}` }, robots: e.isDemo ? { index: false, follow: true } : undefined };
 }
@@ -25,11 +26,12 @@ export async function generateMetadata({ params }: PageProps<"/schedule/[slug]">
 const PHASE = { ongoing: "진행 중", upcoming: "예정", ended: "종료" } as const;
 
 export default async function EventPage({ params }: PageProps<"/schedule/[slug]">) {
-  const e = getEvent((await params).slug);
+  const e = await getEvent((await params).slug);
   if (!e) notFound();
+  const all = await getProducts();
   const phase = eventPhase(e);
   const key = eventKeyDate(e);
-  const products = e.productSlugs.map((s) => getProduct(s)).filter((p): p is Product => Boolean(p));
+  const products = e.productSlugs.map((s) => all.find((p) => p.slug === s)).filter((p): p is Product => Boolean(p));
 
   return (
     <article className="mx-auto max-w-3xl px-4 pb-6 pt-4">

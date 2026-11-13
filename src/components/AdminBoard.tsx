@@ -1,7 +1,7 @@
 "use client";
-// 관리자 대시보드(프로토타입). 승인·반려·병합은 화면 상태만 바꾼다.
-// Phase 2에서 Supabase(product_candidates · products · collection_logs)에 쓰도록 바꾼다.
-import { useState } from "react";
+// 관리자 대시보드. DB가 연결돼 있으면(live) 검수 상태와 판매 상태를 Supabase에 저장한다.
+// 연결이 없으면 예시 데이터로 화면만 보여 주고 저장하지 않는다.
+import { useState, useTransition } from "react";
 import { checkedLabel } from "@/lib/format";
 import { LIMITED, SALE_STATUS, categoryName } from "@/lib/taxonomy";
 import type { AiField, Candidate, CollectionLog, LimitedType, Product, ReviewStatus, SaleStatus } from "@/lib/types";
@@ -140,13 +140,50 @@ function CandidateCard({ c, products, onDecide }: { c: Candidate; products: Prod
 
 type Tab = "candidates" | "products" | "logs";
 
-export function AdminBoard({ candidates, products, logs }: { candidates: Candidate[]; products: Product[]; logs: CollectionLog[] }) {
+export function AdminBoard({
+  candidates,
+  products,
+  logs,
+  live,
+  decideAction,
+  saleAction,
+}: {
+  candidates: Candidate[];
+  products: Product[];
+  logs: CollectionLog[];
+  live: boolean;
+  decideAction: (id: string, s: ReviewStatus) => Promise<void>;
+  saleAction: (id: string, s: SaleStatus) => Promise<void>;
+}) {
+  const [, startTransition] = useTransition();
+  const [saveError, setSaveError] = useState("");
   const [tab, setTab] = useState<Tab>("candidates");
   const [cands, setCands] = useState(candidates);
   const [filter, setFilter] = useState<ReviewStatus | "all">("pending");
   const [sale, setSale] = useState<Record<string, SaleStatus>>(() => Object.fromEntries(products.map((p) => [p.id, p.saleStatus])));
 
-  const decide = (id: string, s: ReviewStatus) => setCands((cs) => cs.map((c) => (c.id === id ? { ...c, reviewStatus: s } : c)));
+  const save = (run: () => Promise<void>, undo: () => void) => {
+    if (!live) return;
+    setSaveError("");
+    startTransition(async () => {
+      try {
+        await run();
+      } catch (e) {
+        undo();
+        setSaveError(`저장하지 못했어요: ${e instanceof Error ? e.message : "알 수 없는 오류"}`);
+      }
+    });
+  };
+  const decide = (id: string, s: ReviewStatus) => {
+    const prev = cands;
+    setCands((cs) => cs.map((c) => (c.id === id ? { ...c, reviewStatus: s } : c)));
+    save(() => decideAction(id, s), () => setCands(prev));
+  };
+  const changeSale = (id: string, s: SaleStatus) => {
+    const prev = sale;
+    setSale((x) => ({ ...x, [id]: s }));
+    save(() => saleAction(id, s), () => setSale(prev));
+  };
   const count = (s: ReviewStatus) => cands.filter((c) => c.reviewStatus === s).length;
   const shown = cands.filter((c) => filter === "all" || c.reviewStatus === filter);
   const lastOk = logs.find((l) => l.ok);
@@ -158,9 +195,14 @@ export function AdminBoard({ candidates, products, logs }: { candidates: Candida
     <div className="mx-auto max-w-5xl px-4 pb-16 pt-6">
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="font-display text-[26px] text-ink">JAPAN FINDS 관리자</h1>
-        <span className="sticker bg-ink text-white">프로토타입 · 저장되지 않음</span>
+        <span className={`sticker ${live ? "bg-mint text-mint-deep" : "bg-ink text-white"}`}>{live ? "Supabase 연결됨" : "DB 미연결 · 저장되지 않음"}</span>
       </div>
       <p className="mt-1 text-[13px] text-ink-soft">AI가 정리한 후보는 여기서 승인해야만 사용자 화면에 나가요.</p>
+      {saveError && (
+        <p role="alert" className="mt-3 rounded-2xl bg-coral px-4 py-3 text-[13px] font-bold text-white">
+          {saveError}
+        </p>
+      )}
 
       <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
@@ -236,7 +278,7 @@ export function AdminBoard({ candidates, products, logs }: { candidates: Candida
                     <td className="px-2 py-3 text-ink-soft">{p.sources.every((s) => s.verified) ? "검증됨" : "검증 대기"}</td>
                     <td className="px-2 py-3 text-ink-soft">{jp ? checkedLabel(jp.checkedAt).replace(" 확인", "") : "가격 없음"}</td>
                     <td className="px-4 py-3">
-                      <select aria-label={`${p.nameKo} 판매 상태`} value={sale[p.id]} onChange={(e) => setSale((s) => ({ ...s, [p.id]: e.target.value as SaleStatus }))} className="h-9 rounded-xl border-[1.5px] border-line bg-white px-2 font-bold text-ink">
+                      <select aria-label={`${p.nameKo} 판매 상태`} value={sale[p.id]} onChange={(e) => changeSale(p.id, e.target.value as SaleStatus)} className="h-9 rounded-xl border-[1.5px] border-line bg-white px-2 font-bold text-ink">
                         {(Object.keys(SALE_STATUS) as SaleStatus[]).map((s) => (
                           <option key={s} value={s}>
                             {SALE_STATUS[s]}

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { DemoNotice } from "@/components/Bits";
 import { ScheduleList } from "@/components/ScheduleList";
-import { allEvents, eventPhase } from "@/lib/catalog";
+import { eventPhase, sortEvents } from "@/lib/catalog";
+import { getEvents } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "일본 팝업·발매·응모 일정",
@@ -9,8 +10,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/schedule" },
 };
 
-export default function SchedulePage() {
-  const rows = allEvents().map((event) => ({ event, phase: eventPhase(event) }));
+export default async function SchedulePage() {
+  const rows = sortEvents(await getEvents()).map((event) => ({ event, phase: eventPhase(event) }));
   return (
     <div className="mx-auto max-w-6xl px-4 pb-6 pt-6">
       <p className="font-maru text-[11px] font-bold tracking-[0.18em] text-coral-deep">SCHEDULE</p>

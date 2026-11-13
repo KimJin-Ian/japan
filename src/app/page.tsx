@@ -3,7 +3,8 @@ import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
 import { SearchBox } from "@/components/Chrome";
 import { ProductCard } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
-import { characterAndGacha, comparable, editorPicks, getProduct, jpOffer, krOffer, liveEvents, newReleases, popupItems, upcoming } from "@/lib/catalog";
+import { characterAndGacha, comparable, editorPicks, jpOffer, krOffer, liveEvents, newReleases, popupItems, upcoming } from "@/lib/catalog";
+import { getEvents, getProducts } from "@/lib/data";
 import { jpyToKrw, won, yen } from "@/lib/format";
 import { CATEGORIES } from "@/lib/taxonomy";
 import type { CategorySlug, Product, VisualMotif } from "@/lib/types";
@@ -31,8 +32,10 @@ function Rail({ products }: { products: Product[] }) {
   );
 }
 
-function Hero() {
-  const pile = ["mochineko-tokyo-station-plush", "karakoro-mini-kissaten", "harubiyori-season-ink-winter"].map((s) => getProduct(s)!);
+function Hero({ products }: { products: Product[] }) {
+  // 에디터 추천 3개를 스티커처럼 붙인다. 추천이 모자라면 최근 등록 상품으로 채운다
+  const picks = editorPicks(products);
+  const pile = [...picks, ...products.filter((p) => !picks.includes(p) && p.saleStatus !== "ended")].slice(0, 3);
   const tilt = ["-rotate-6", "rotate-3 translate-y-5", "-rotate-2"];
   const tapes = ["bg-butter", "bg-pink-deep/70", "bg-mint"];
   return (
@@ -100,11 +103,12 @@ function CompareTeaser({ product: p }: { product: Product }) {
   );
 }
 
-export default function Home() {
-  const events = liveEvents().slice(0, 4);
+export default async function Home() {
+  const [products, allEvents] = await Promise.all([getProducts(), getEvents()]);
+  const events = liveEvents(allEvents).slice(0, 4);
   return (
     <>
-      <Hero />
+      <Hero products={products} />
 
       <div className="mx-auto max-w-6xl space-y-12 pt-8 lg:space-y-16 lg:px-4 lg:pt-12">
         <nav aria-label="카테고리">
@@ -124,12 +128,12 @@ export default function Home() {
 
         <section>
           <SectionTitle ja="PICK UP" title="지금 주목할 일본 한정템" note="에디터가 고른 상품이에요. 판매량 순위가 아니에요." href="/products?sort=new" tape="var(--color-pink)" />
-          <Rail products={editorPicks()} />
+          <Rail products={editorPicks(products)} />
         </section>
 
         <section>
           <SectionTitle ja="NEW ARRIVAL" title="최근 출시된 신상품" note="최근 30일 안에 일본에서 나온 상품" href="/products?sort=release" />
-          <Rail products={newReleases()} />
+          <Rail products={newReleases(products)} />
         </section>
 
         <section className="gingham border-y border-line/70 py-8 lg:rounded-[28px] lg:border lg:px-6">
@@ -145,23 +149,23 @@ export default function Home() {
 
         <section>
           <SectionTitle ja="CHARACTER & GACHA" title="캐릭터 · 가챠 새 소식" note="최근 등록순" href="/products?category=character" tape="var(--color-lilac)" />
-          <Rail products={characterAndGacha()} />
+          <Rail products={characterAndGacha(products)} />
         </section>
 
         <section>
           <SectionTitle ja="POP UP" title="팝업스토어에서만 파는 것" note="기간이 끝나면 살 수 없어요" href="/category/popup" tape="var(--color-mint)" />
-          <Rail products={popupItems()} />
+          <Rail products={popupItems(products)} />
         </section>
 
         <section>
           <SectionTitle ja="COMING SOON" title="곧 출시되는 상품" note="출시일이 가까운 순" href="/products?status=upcoming" tape="var(--color-peach)" />
-          <Rail products={upcoming()} />
+          <Rail products={upcoming(products)} />
         </section>
 
         <section>
           <SectionTitle ja="PRICE CHECK" title="일본 현지 가격으로 보기" note="같은 상품·같은 용량임을 확인한 것만 비교해요" href="/compare" tape="var(--color-sky)" />
           <ul className="grid gap-3 px-4 md:grid-cols-3 lg:px-0">
-            {comparable().map((p) => (
+            {comparable(products).map((p) => (
               <li key={p.id}>
                 <CompareTeaser product={p} />
               </li>

@@ -1,12 +1,7 @@
-// 상품·일정 조회 함수. 지금은 데모 데이터를 읽고, Phase 2에서 Supabase 쿼리로 바꾼다.
-// 화면은 이 파일의 함수만 쓰므로 데이터 원본을 바꿔도 화면 코드는 그대로다.
-import { EVENTS, PRODUCTS } from "./demo-data";
+// 상품·일정 목록을 받아 화면용으로 고르는 순수 함수들. 데이터는 data.ts 가 가져온다.
+// (브라우저 컴포넌트에서도 쓰므로 여기서는 DB나 서버 전용 모듈을 불러오지 않는다.)
 import { daysUntil } from "./format";
 import type { EventItem, Offer, Product } from "./types";
-
-export const allProducts = () => PRODUCTS;
-export const getProduct = (slug: string) => PRODUCTS.find((p) => p.slug === slug);
-export const getProductById = (id: string) => PRODUCTS.find((p) => p.id === id);
 
 export const jpOffer = (p: Product): Offer | undefined => p.offers.find((o) => o.country === "JP");
 
@@ -18,35 +13,36 @@ export const canCompare = (p: Product) => Boolean(jpOffer(p) && krOffer(p));
 
 const byNewest = (a: Product, b: Product) => b.addedAt.localeCompare(a.addedAt);
 
-export const editorPicks = () => PRODUCTS.filter((p) => p.editorPick && p.saleStatus !== "ended");
+export const editorPicks = (ps: Product[]) => ps.filter((p) => p.editorPick && p.saleStatus !== "ended");
 
 /** 최근 30일 안에 일본에서 출시된 상품 */
-export const newReleases = () =>
-  PRODUCTS.filter((p) => p.saleStatus === "on_sale" && p.releaseDate && daysUntil(p.releaseDate) >= -30).sort((a, b) =>
-    (b.releaseDate ?? "").localeCompare(a.releaseDate ?? ""),
-  );
+export const newReleases = (ps: Product[]) =>
+  ps
+    .filter((p) => p.saleStatus === "on_sale" && p.releaseDate && daysUntil(p.releaseDate) >= -30)
+    .sort((a, b) => (b.releaseDate ?? "").localeCompare(a.releaseDate ?? ""));
 
-export const characterAndGacha = () =>
-  PRODUCTS.filter((p) => (p.category === "character" || p.category === "gacha") && p.saleStatus !== "ended").sort(byNewest);
+export const characterAndGacha = (ps: Product[]) =>
+  ps.filter((p) => (p.category === "character" || p.category === "gacha") && p.saleStatus !== "ended").sort(byNewest);
 
-export const popupItems = () => PRODUCTS.filter((p) => p.category === "popup" && p.saleStatus !== "ended");
+export const popupItems = (ps: Product[]) => ps.filter((p) => p.category === "popup" && p.saleStatus !== "ended");
 
-export const upcoming = () =>
-  PRODUCTS.filter((p) => p.saleStatus === "upcoming").sort((a, b) => (a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""));
+export const upcoming = (ps: Product[]) =>
+  ps.filter((p) => p.saleStatus === "upcoming").sort((a, b) => (a.releaseDate ?? "").localeCompare(b.releaseDate ?? ""));
 
-export const comparable = () => PRODUCTS.filter(canCompare);
+export const comparable = (ps: Product[]) => ps.filter(canCompare);
 
-export const related = (p: Product, n = 5) =>
-  PRODUCTS.filter((q) => q.id !== p.id && q.saleStatus !== "ended")
+export const related = (ps: Product[], p: Product, n = 5) =>
+  ps
+    .filter((q) => q.id !== p.id && q.saleStatus !== "ended")
     .map((q) => ({ q, score: (q.brand === p.brand ? 3 : 0) + (q.category === p.category ? 2 : 0) + (q.region === p.region ? 1 : 0) }))
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, n)
     .map((x) => x.q);
 
-export const brands = () => {
+export const brandsOf = (ps: Product[]) => {
   const map = new Map<string, { slug: string; name: string; count: number }>();
-  for (const p of PRODUCTS) {
+  for (const p of ps) {
     const cur = map.get(p.brandSlug) ?? { slug: p.brandSlug, name: p.brand, count: 0 };
     cur.count += 1;
     map.set(p.brandSlug, cur);
@@ -75,10 +71,9 @@ export const eventKeyDate = (e: EventItem): { label: string; date?: string } => 
   return { label: "종료", date: e.endDate ?? e.startDate };
 };
 
-export const allEvents = () =>
-  [...EVENTS].sort((a, b) => (eventKeyDate(a).date ?? "9999").localeCompare(eventKeyDate(b).date ?? "9999"));
+export const sortEvents = (es: EventItem[]) =>
+  [...es].sort((a, b) => (eventKeyDate(a).date ?? "9999").localeCompare(eventKeyDate(b).date ?? "9999"));
 
-export const liveEvents = () => allEvents().filter((e) => eventPhase(e) !== "ended");
-export const getEvent = (slug: string) => EVENTS.find((e) => e.slug === slug);
-export const eventsForProduct = (slug: string) => EVENTS.filter((e) => e.productSlugs.includes(slug));
-export const eventsForBrand = (brandSlug: string) => allEvents().filter((e) => e.brandSlug === brandSlug);
+export const liveEvents = (es: EventItem[]) => sortEvents(es).filter((e) => eventPhase(e) !== "ended");
+export const eventsForProduct = (es: EventItem[], slug: string) => es.filter((e) => e.productSlugs.includes(slug));
+export const eventsForBrand = (es: EventItem[], brandSlug: string) => sortEvents(es).filter((e) => e.brandSlug === brandSlug);

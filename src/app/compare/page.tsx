@@ -5,6 +5,7 @@ import { PriceCompare } from "@/components/PriceCompare";
 import { ProductVisual } from "@/components/ProductVisual";
 import { LimitedStickers } from "@/components/Stickers";
 import { comparable } from "@/lib/catalog";
+import { getProducts } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "일본 가격 · 한국 가격 비교",
@@ -12,8 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/compare" },
 };
 
-export default function ComparePage() {
-  const list = comparable();
+export default async function ComparePage() {
+  const list = comparable(await getProducts());
   return (
     <div className="mx-auto max-w-6xl px-4 pb-6 pt-6">
       <p className="font-maru text-[11px] font-bold tracking-[0.18em] text-coral-deep">PRICE CHECK</p>

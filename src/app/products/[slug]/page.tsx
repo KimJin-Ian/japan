@@ -8,7 +8,8 @@ import { ProductVisual } from "@/components/ProductVisual";
 import { RequestCta, ViewTracker } from "@/components/RequestCta";
 import { SaveButton } from "@/components/SaveButton";
 import { DemoSticker, KrSticker, LimitedStickers, StatusSticker } from "@/components/Stickers";
-import { allProducts, eventsForProduct, getProduct, jpOffer, related } from "@/lib/catalog";
+import { eventsForProduct, jpOffer, related } from "@/lib/catalog";
+import { getEvents, getProduct, getProducts } from "@/lib/data";
 import { checkedLabel, dday, longDate, yen } from "@/lib/format";
 import { buildPrefill, gyeomsaReady } from "@/lib/gyeomsa";
 import { SITE_URL } from "@/lib/site";
@@ -18,12 +19,12 @@ import type { Product } from "@/lib/types";
 // 등록되지 않은 주소는 서버에서 다 그린 뒤 보낸다(검색엔진이 완성된 HTML을 받도록).
 export const instant = false;
 
-export function generateStaticParams() {
-  return allProducts().map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  return (await getProducts()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
-  const p = getProduct((await params).slug);
+  const p = await getProduct((await params).slug);
   if (!p) return {};
   const offer = jpOffer(p);
   const title = `${p.nameKo} — 일본 가격·판매처`;
@@ -74,12 +75,13 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 }
 
 export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
-  const p = getProduct((await params).slug);
+  const p = await getProduct((await params).slug);
   if (!p) notFound();
+  const [all, allEvents] = await Promise.all([getProducts(), getEvents()]);
 
   const offer = jpOffer(p);
-  const events = eventsForProduct(p.slug);
-  const more = related(p);
+  const events = eventsForProduct(allEvents, p.slug);
+  const more = related(all, p);
   const prefill = buildPrefill(p);
   const ended = p.saleStatus === "ended";
 

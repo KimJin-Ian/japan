@@ -3,7 +3,8 @@ import { Suspense } from "react";
 import { DemoNotice } from "@/components/Bits";
 import { SearchBox } from "@/components/Chrome";
 import { Explorer } from "@/components/Explorer";
-import { allProducts, brands } from "@/lib/catalog";
+import { brandsOf } from "@/lib/catalog";
+import { getProducts } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "일본 한정상품 전체 보기",
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/products" },
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const products = await getProducts();
   return (
     <div className="pb-6 pt-6">
       <div className="mx-auto max-w-6xl px-4">
@@ -25,7 +27,7 @@ export default function ProductsPage() {
         <DemoNotice className="my-4" />
       </div>
       <Suspense fallback={<p className="px-4 py-10 text-center text-[13px] text-mute">상품을 불러오는 중…</p>}>
-        <Explorer products={allProducts()} brands={brands()} />
+        <Explorer products={products} brands={brandsOf(products)} />
       </Suspense>
     </div>
   );

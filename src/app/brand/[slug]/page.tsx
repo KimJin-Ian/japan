@@ -2,18 +2,19 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
 import { ProductGrid } from "@/components/ProductCard";
-import { allProducts, brands, eventsForBrand } from "@/lib/catalog";
+import { brandsOf, eventsForBrand } from "@/lib/catalog";
+import { getEvents, getProducts } from "@/lib/data";
 
 // 등록되지 않은 주소는 서버에서 다 그린 뒤 보낸다(검색엔진이 완성된 HTML을 받도록).
 export const instant = false;
 
-export function generateStaticParams() {
-  return brands().map((b) => ({ slug: b.slug }));
+export async function generateStaticParams() {
+  return brandsOf(await getProducts()).map((b) => ({ slug: b.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/brand/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const b = brands().find((x) => x.slug === slug);
+  const b = brandsOf(await getProducts()).find((x) => x.slug === slug);
   if (!b) return {};
   return { title: `${b.name} 일본 한정상품·일정`, description: `${b.name}의 일본 한정상품, 신상품, 팝업·발매 일정을 모았어요.`, alternates: { canonical: `/brand/${b.slug}` } };
 }
@@ -21,10 +22,11 @@ export async function generateMetadata({ params }: PageProps<"/brand/[slug]">): 
 /** 브랜드 허브: 그 브랜드의 상품과 일정을 한 페이지에 */
 export default async function BrandPage({ params }: PageProps<"/brand/[slug]">) {
   const { slug } = await params;
-  const b = brands().find((x) => x.slug === slug);
+  const [all, allEvents] = await Promise.all([getProducts(), getEvents()]);
+  const b = brandsOf(all).find((x) => x.slug === slug);
   if (!b) notFound();
-  const products = allProducts().filter((p) => p.brandSlug === b.slug);
-  const events = eventsForBrand(b.slug);
+  const products = all.filter((p) => p.brandSlug === b.slug);
+  const events = eventsForBrand(allEvents, b.slug);
   return (
     <div className="mx-auto max-w-6xl pb-6 pt-6">
       <div className="px-4">
