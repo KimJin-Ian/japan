@@ -92,7 +92,13 @@ const toEvent = (r: any): EventItem => ({
   isDemo: r.is_demo,
 });
 
-const METHOD_LABEL = { rss: "RSS", api: "API", manual: "수동 등록" } as const;
+const AI_FIELDS = ["nameKo", "summaryKo", "brand", "category", "limitedTypes", "releaseDate", "endDate", "places", "priceJpy", "usefulForKr"] as const;
+
+/** 아직 AI 분석을 거치지 않은 후보는 모든 항목을 '확인 필요'(값 없음)로 채운다 */
+const normalizeAi = (ai: any): Candidate["ai"] =>
+  Object.fromEntries(AI_FIELDS.map((k) => [k, ai?.[k] && typeof ai[k] === "object" ? ai[k] : { value: null, confidence: 0 }])) as Candidate["ai"];
+
+const METHOD_LABEL ={ rss: "RSS", api: "API", manual: "수동 등록" } as const;
 
 /* ---------- 사용자 화면 (캐시) ---------- */
 
@@ -144,7 +150,7 @@ export async function getAdminData(): Promise<{ candidates: Candidate[]; logs: C
         reviewStatus: r.review_status,
         duplicateOf: r.duplicate_of ?? undefined,
         imageRights: r.image_rights,
-        ai: r.ai,
+        ai: normalizeAi(r.ai),
       }),
     ),
     logs: l.data!.map(

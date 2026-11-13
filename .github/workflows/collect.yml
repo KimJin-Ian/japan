@@ -1,0 +1,30 @@
+name: 후보 수집
+
+# 하루 1회(한국 시간 07:00). PR TIMES 피드는 최신 200건만 담고 있어서
+# 하루 1회로는 그 시점의 최근 보도자료만 잡힌다. 더 촘촘히 모으려면 cron 을 "0 * * * *"(매시)로 바꾼다.
+on:
+  schedule:
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  prtimes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: PR TIMES RSS 수집
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: python collector/prtimes.py
