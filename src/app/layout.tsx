@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Jua, Zen_Maru_Gothic } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import { Header, TabBar } from "@/components/Chrome";
 import { Footer } from "@/components/Bits";
@@ -53,6 +54,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense>
           <TabBar />
         </Suspense>
+        <Analytics />
       </body>
     </html>
   );
