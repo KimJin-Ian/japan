@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DemoNotice } from "@/components/Bits";
 import { PopupList } from "@/components/PopupList";
 import { getProducts } from "@/lib/data";
 
@@ -21,7 +20,6 @@ export default async function PopupPage() {
         </span>
       </h1>
       <p className="mt-1.5 text-[13px] text-ink-soft">기간이 끝나면 살 수 없는 것들이에요. 여행 날짜와 겹치는 팝업을 찾아보세요.</p>
-      <DemoNotice className="my-4" />
       <PopupList products={products} />
     </div>
   );

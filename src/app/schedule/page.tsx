@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DemoNotice, EventRow } from "@/components/Bits";
+import { EventRow } from "@/components/Bits";
 import { DateRow } from "@/components/DateRow";
 import { liveEvents } from "@/lib/catalog";
 import { getEvents, getProducts } from "@/lib/data";
@@ -59,7 +59,6 @@ export default async function SchedulePage() {
         </span>
       </h1>
       <p className="mt-1.5 text-[13px] text-ink-soft">발표에 날짜가 적힌 소식만 실어요. 한국과 일본은 시차가 없어 날짜 그대로예요.</p>
-      <DemoNotice className="my-4" />
 
       {events.length > 0 && (
         <section className="mt-6">

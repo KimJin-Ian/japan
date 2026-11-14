@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DemoNotice, EVENT_KIND } from "@/components/Bits";
+import { EVENT_KIND } from "@/components/Bits";
 import { ProductCard } from "@/components/ProductCard";
 import { ScopeSticker } from "@/components/Stickers";
 import { eventKeyDate, eventPhase } from "@/lib/catalog";
@@ -125,7 +125,6 @@ export default async function EventPage({ params }: PageProps<"/schedule/[slug]"
         </section>
       )}
 
-      <DemoNotice className="mt-6" />
     </article>
   );
 }

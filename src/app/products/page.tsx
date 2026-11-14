@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { DemoNotice } from "@/components/Bits";
 import { SearchBox } from "@/components/Chrome";
 import { Explorer } from "@/components/Explorer";
 import { brandsOf } from "@/lib/catalog";
@@ -31,7 +30,6 @@ export default async function ProductsPage() {
         <div className="mt-4 md:hidden">
           <SearchBox />
         </div>
-        <DemoNotice className="my-4" />
       </div>
       <Suspense fallback={<p className="px-4 py-10 text-center text-[13px] text-mute">상품을 불러오는 중…</p>}>
         <Explorer products={products} brands={brandsOf(products)} />

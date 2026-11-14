@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
+import { EventRow, SectionTitle } from "@/components/Bits";
 import { SearchBox } from "@/components/Chrome";
 import { CompareTeaser } from "@/components/PriceCompare";
 import { ProductCard, ProductRow } from "@/components/ProductCard";
@@ -163,7 +163,6 @@ export default async function Home() {
           </ul>
         </nav>
 
-        <DemoNotice className="mx-4 lg:mx-0" />
 
         {picks.length > 0 && (
           <section>

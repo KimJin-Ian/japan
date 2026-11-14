@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DemoNotice } from "@/components/Bits";
 import { PriceCompare } from "@/components/PriceCompare";
 import { ProductVisual } from "@/components/ProductVisual";
 import { LimitedStickers } from "@/components/Stickers";
@@ -28,7 +27,6 @@ export default async function ComparePage() {
         <li>· 한국 가격을 확인하지 못한 상품은 이 목록에 넣지 않아요.</li>
         <li>· 배송비, 관·부가세, 대행 수수료는 포함하지 않은 값이에요.</li>
       </ul>
-      <DemoNotice className="my-4" />
 
       {list.length === 0 ? (
         <p className="card dots px-6 py-12 text-center text-[14px] text-ink-soft">비교할 수 있는 상품이 아직 없어요.</p>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { DemoNotice } from "@/components/Bits";
 import { Explorer } from "@/components/Explorer";
 import { brandsOf } from "@/lib/catalog";
 import { getProducts } from "@/lib/data";
@@ -36,7 +35,6 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
           </span>
         </h1>
         <p className="mt-1.5 text-[13px] text-ink-soft">{c.desc}</p>
-        <DemoNotice className="my-4" />
       </div>
       <Suspense fallback={<p className="px-4 py-10 text-center text-[13px] text-mute">상품을 불러오는 중…</p>}>
         <Explorer products={products} fixedCategory={c.slug} brands={brandsOf(products)} />

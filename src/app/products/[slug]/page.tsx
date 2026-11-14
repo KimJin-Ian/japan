@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
+import { EventRow, SectionTitle } from "@/components/Bits";
 import { PriceCompare } from "@/components/PriceCompare";
 import { ProductGrid } from "@/components/ProductCard";
 import { ProductVisual } from "@/components/ProductVisual";
@@ -351,7 +351,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                   </li>
                 ))}
               </ul>
-              <DemoNotice className="mt-3" />
             </section>
           </div>
         </div>

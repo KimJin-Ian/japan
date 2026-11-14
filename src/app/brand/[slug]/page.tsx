@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DemoNotice, EventRow, SectionTitle } from "@/components/Bits";
+import { EventRow, SectionTitle } from "@/components/Bits";
 import { ProductGrid } from "@/components/ProductCard";
 import { brandsOf, eventsForBrand } from "@/lib/catalog";
 import { getEvents, getProducts } from "@/lib/data";
@@ -41,7 +41,6 @@ export default async function BrandPage({ params }: PageProps<"/brand/[slug]">) 
         <p className="mt-1.5 text-[13px] text-ink-soft">
           상품 {products.length}개 · 일정 {events.length}건
         </p>
-        <DemoNotice className="my-4" />
       </div>
 
       {events.length > 0 && (
