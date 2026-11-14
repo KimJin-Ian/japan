@@ -46,7 +46,7 @@ def rest(method: str, path: str, body=None):
 def extract(page: str) -> tuple[str | None, str | None]:
     """(본문 글자, 대표 이미지 주소)"""
     m = re.search(r'<meta[^>]+property="og:image"[^>]+content="(https://[^"]+)"', page)
-    image = html.unescape(m.group(1)) if m else None
+    image = html.unescape(m.group(1)).encode("utf-8", "ignore").decode("utf-8") if m else None
     if image and re.search(r"(ogp|default|common|logo)", image.rsplit("/", 1)[-1], re.I):
         image = None  # 사이트 공통 이미지는 쓰지 않는다
 
@@ -59,7 +59,10 @@ def extract(page: str) -> tuple[str | None, str | None]:
         chunk = re.sub(r"<br\s*/?>|</p>|</div>|</li>|</h\d>|</tr>", "\n", chunk)
         chunk = html.unescape(re.sub(r"<[^>]+>", " ", chunk.split(">", 1)[-1]))
         lines = [re.sub(r"[ \t　]+", " ", ln).strip() for ln in chunk.split("\n")]
-        text = "\n".join(ln for ln in lines if ln)[:6000] or None
+        text = "\n".join(ln for ln in lines if ln)
+        # DB가 받지 못하는 글자(널 문자 등 제어 문자, 짝이 깨진 문자)를 지운다
+        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
+        text = text.encode("utf-8", "ignore").decode("utf-8")[:6000] or None
     return text, image
 
 
@@ -108,8 +111,18 @@ def main() -> int:
             patch: dict = {"ai": ai}
             if text:
                 patch["raw_excerpt_ja"] = text
-            rest("PATCH", f"product_candidates?id=eq.{c['id']}", patch)
-            ok += 1
+            try:
+                rest("PATCH", f"product_candidates?id=eq.{c['id']}", patch)
+                ok += 1
+            except urllib.error.HTTPError as e:
+                # 글 하나가 저장되지 않아도 전체를 멈추지 않는다. 본문 없이 표시만 남겨 번역 단계로 넘긴다
+                failed += 1
+                detail = e.read().decode("utf-8", "ignore")[:200]
+                print(f"   저장 실패 {e.code}: {c['source_url']} {detail}")
+                try:
+                    rest("PATCH", f"product_candidates?id=eq.{c['id']}", {"ai": {**(c.get("ai") or {}), "enriched": True}})
+                except urllib.error.HTTPError:
+                    pass
             if i % 200 == 0:
                 print(f"   {i}/{len(cands)}")
     print(f"완료: 본문 {ok}건 · 대표 이미지 {with_image}건 · 실패 {failed}건(다음 실행에서 다시)")

@@ -30,11 +30,14 @@ jobs:
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
         run: python collector/collect.py
       - name: PR TIMES 원문에서 본문·대표 이미지 채우기
+        # 앞 단계가 일부 실패해도 이어서 돌린다
+        if: always()
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
         run: python collector/enrich.py
       - name: Claude 번역·분류·게시
+        if: always()
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
