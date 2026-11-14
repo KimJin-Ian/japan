@@ -59,6 +59,7 @@ SOURCES = [
     {"key": "gamewatch", "name": "GAME Watch", "target": "GAME Watch RSS", "url": "https://game.watch.impress.co.jp/data/rss/1.0/gmw/feed.rdf", "no_image": True},
     {"key": "hobbywatch", "name": "HOBBY Watch", "target": "HOBBY Watch RSS", "url": "https://hobby.watch.impress.co.jp/data/rss/1.0/hbw/feed.rdf", "no_image": True},
     {"key": "animeanime", "name": "アニメ！アニメ！", "target": "アニメ！アニメ！ RSS", "url": "https://animeanime.jp/rss20/index.rdf"},
+    {"key": "wwdjapan", "name": "WWDJAPAN", "target": "WWDJAPAN(패션·뷰티) RSS", "url": "https://www.wwdjapan.com/feed"},
     {"key": "fashionsnap", "name": "FASHIONSNAP", "target": "FASHIONSNAP RSS", "url": "https://www.fashionsnap.com/rss.xml"},
     {"key": "hjweb", "name": "ホビージャパンウェブ", "target": "ホビージャパンウェブ RSS", "url": "https://hjweb.jp/feed/"},
     {"key": "walkerplus", "name": "Walkerplus", "target": "Walkerplus RSS", "url": "https://www.walkerplus.com/rss/"},

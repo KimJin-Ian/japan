@@ -47,7 +47,7 @@ LIMIT = int(os.environ.get("ANALYZE_LIMIT", "4000"))
 AUTO_PUBLISH = os.environ.get("AUTO_PUBLISH", "1") == "1"
 PUBLISH_ALL = os.environ.get("PUBLISH_ALL", "1") == "1"
 WORKERS = int(os.environ.get("ANALYZE_WORKERS", "4"))  # 동시에 보내는 요청 수
-EXCERPT_FOR_MODEL = 3000  # 글 하나에서 모델에 보여 주는 최대 글자 수
+EXCERPT_FOR_MODEL = 6000  # 글 하나에서 모델에 보여 주는 최대 글자 수
 
 Category = Literal["character", "gacha", "fashion", "beauty", "stationery", "living", "regional", "popup"]
 Region = Literal["tokyo", "osaka", "kyoto", "hokkaido", "fukuoka", "nagoya", "okinawa", "other", "online"]
@@ -57,8 +57,8 @@ class Item(BaseModel):
     index: int = Field(description="입력 목록에서의 번호")
     is_consumer_product: bool = Field(description="일반 소비자가 일본에서 살 수 있는 상품·굿즈·팝업 소식인가. 기업용 서비스, 세일, 숙박, 앱, 행사 안내는 false")
     name_ko: str = Field(description="한국어 상품명. 브랜드명은 원어 표기를 살린다. 40자 이내")
-    summary_ko: str = Field(description="한국어 소개. 글 내용이 있으면 3~6문장으로 자세히, 제목뿐이면 한두 문장. 원문 문장을 그대로 옮기지 말고 다시 정리한다")
-    points: list[str] = Field(description="글에 적힌 구체적인 사실을 한 줄씩, 최대 12개. 상품마다 이름과 가격(엔), 발매일, 판매 매장·장소, 수량·구매 제한, 특전 등. 제목뿐이면 빈 목록")
+    summary_ko: str = Field(description="한국어 소개. 글 내용이 있으면 5~9문장으로 빠짐없이 자세히, 제목뿐이면 한두 문장. 원문 문장을 그대로 옮기지 말고 다시 정리한다")
+    points: list[str] = Field(description="글에 적힌 구체적인 사실을 한 줄씩, 최대 20개. 상품마다 이름과 가격(엔), 발매일, 판매 매장·장소, 수량·구매 제한, 특전 등. 제목뿐이면 빈 목록")
     brand: Optional[str] = Field(description="브랜드나 판매 회사. 제목에 없으면 null")
     category: Optional[Category] = Field(description="가장 가까운 카테고리. 판단할 수 없으면 null")
     region: Region = Field(description="판매 지역. 제목에 지역이 없으면 other, 온라인 판매가 명시되면 online")
@@ -66,6 +66,7 @@ class Item(BaseModel):
     release_date: Optional[str] = Field(description="발매·시작일 YYYY-MM-DD. 글에 날짜가 없으면 null")
     end_date: Optional[str] = Field(description="판매·행사 종료일 YYYY-MM-DD. 없으면 null")
     price_jpy: Optional[int] = Field(description="글에 적힌 엔화 가격(세금 포함가 우선). 여러 개면 가장 낮은 가격. 없으면 null")
+    appeal: Literal["high", "normal", "low"] = Field(description="일본에 관심 있는 한국 사람이 얼마나 끌릴 소식인가")
     confidence: float = Field(description="이 정리 전체에 대한 확신 0~1")
 
 
@@ -83,7 +84,7 @@ SYSTEM = """당신은 일본 보도자료 제목을 한국 사용자용 상품 �
 - 제목과 발췌에 실제로 적힌 사실만 씁니다. 가격, 날짜, 판매처, 지역이 적혀 있지 않으면 null(또는 빈 목록, other)로 둡니다. 추측해서 채우지 않습니다.
 - 날짜는 제목에 월·일이 있을 때만 적습니다. 연도가 없으면 제공된 '오늘 날짜'를 기준으로 가장 가까운 미래 또는 최근의 해로 봅니다.
 - name_ko 는 자연스러운 한국어 상품명입니다. 광고 문구(新登場！, 話題の 등)는 빼고, 브랜드·캐릭터 이름은 한국에서 통용되는 표기를 씁니다.
-- summary_ko 는 이 소식이 무엇이고 어디서 언제 어떻게 나오는지를 씁니다. 글 내용이 주어졌으면 3~6문장으로 자세히, 제목뿐이면 한두 문장으로 씁니다. 해요체로 씁니다.
+- summary_ko 는 이 소식이 무엇이고 어디서 언제 어떻게 나오는지를 씁니다. 글 내용이 주어졌으면 5~9문장으로, 글에 담긴 내용(배경, 상품 특징, 디자인, 구성, 판매 방식, 특전)을 빠뜨리지 않고 자세히 씁니다. 제목뿐이면 한두 문장으로 씁니다. 반드시 "~해요" 말투로 씁니다.
   원문을 문장 단위로 번역해 옮기지 말고, 한국 독자가 알아야 할 내용을 직접 다시 정리합니다.
 - points 는 글에 적힌 구체적인 사실을 한 줄에 하나씩 한국어로 적습니다. 상품이 여러 개면 상품마다 "이름 — 가격(엔)" 형식으로 한 줄씩 적고,
   이어서 발매일, 판매 매장·장소, 수량·구매 제한, 특전을 적습니다. 가격·매장·날짜는 물건을 사려는 사람에게 가장 중요한 정보이니 글에 있으면 빠뜨리지 않습니다. 글에 없는 내용은 넣지 않습니다.
@@ -92,7 +93,13 @@ SYSTEM = """당신은 일본 보도자료 제목을 한국 사용자용 상품 �
 - category 는 character(캐릭터·애니 굿즈), gacha(가챠·피규어), fashion(패션·액세서리), beauty(뷰티·화장품),
   stationery(문구·잡화), living(생활용품·식품·음료), regional(지역 한정 특산품·기념품), popup(팝업스토어 한정) 중 하나입니다.
   팝업스토어 개최 소식은 popup, 특정 지역에서만 파는 상품은 regional 을 우선합니다.
-- confidence 는 제목만으로 얼마나 확실히 정리했는지입니다. 제목이 모호하면 낮게 줍니다.
+- appeal 은 일본 여행·쇼핑·문화에 관심 있는 한국의 20~30대가 이 소식에 얼마나 끌릴지입니다.
+  high: 한국에서도 잘 알려진 브랜드·캐릭터·작품의 한정 상품이나 콜라보(예: 유니클로, BEAMS, 포터, 무인양품, 산리오, 스누피, 미피, 짱구, 포켓몬, 지브리, 디즈니,
+        점프 작품, 건담, 편의점 3사, 스타벅스, 인기 화장품 브랜드), 도쿄·오사카·교토 등 여행지의 팝업스토어, 일본에서만 살 수 있어 여행 쇼핑리스트에 넣을 만한 것.
+  normal: 소비자 상품이지만 브랜드가 덜 알려졌거나 누구에게나 끌리지는 않는 것.
+  low: 지방의 호텔·식당 행사, 지역 축제, 일본 거주자만 이용할 수 있는 서비스·응모, 매장 휴업·시스템 안내 같은 운영 공지, 한국에서 흔히 살 수 있는 것.
+- brand 는 글에 나오는 브랜드나 판매 회사 이름을 찾아 적습니다. 매체 이름(PR TIMES, FASHIONSNAP 등)은 브랜드가 아닙니다.
+- confidence 는 얼마나 확실히 정리했는지입니다. 글이 모호하면 낮게 줍니다.
 
 입력의 모든 번호에 대해 항목을 하나씩, 같은 번호로 돌려주세요."""
 
@@ -183,7 +190,9 @@ def publish(c: dict, it: Item, types: list[str], today: str) -> Optional[str]:
     if release and end and end < release:
         end = None
     status = "ended" if end and end < today else "upcoming" if release and release > today else "on_sale"
-    brand = (it.brand or "").strip() or c["source_name"]
+    brand = (it.brand or "").strip()
+    if not brand or brand.upper() in ("PR TIMES", "@PRESS", "FASHIONSNAP", "WWDJAPAN"):
+        brand = "기타"
     found = [w for w, _ in LIMITED_WORDS if w in title]
     if types:
         limited_status = "verified"
@@ -201,8 +210,11 @@ def publish(c: dict, it: Item, types: list[str], today: str) -> Optional[str]:
         "brand_slug": "b-" + hashlib.md5(brand.encode("utf-8")).hexdigest()[:10],
         "category": category,
         # 상품·굿즈 소식이 아닌 글은 '뉴스' 태그를 달아 사이트의 뉴스 메뉴로 보낸다
-        "tags": (c.get("ai") or {}).get("matchedKeywords", []) + ([] if it.is_consumer_product else ["뉴스"]),
-        "summary": it.summary_ko[:1500],
+        # 관심도가 낮은 글에는 '관심낮음' 태그를 달아 목록 뒤쪽으로 보낸다
+        "tags": (c.get("ai") or {}).get("matchedKeywords", []) + ([] if it.is_consumer_product else ["뉴스"]) + (["관심낮음"] if it.appeal == "low" else []),
+        # 한국 사용자가 끌릴 만한 소식은 홈과 목록 앞쪽에 올린다
+        "editor_pick": it.is_consumer_product and it.appeal == "high",
+        "summary": it.summary_ko[:2500],
         "limited_status": limited_status,
         "limited_types": types,
         "limited_evidence": evidence,
@@ -212,7 +224,7 @@ def publish(c: dict, it: Item, types: list[str], today: str) -> Optional[str]:
         "end_date": end,
         "sale_status": status,
         "kr_official": "unknown",
-        "conditions": [p.strip()[:200] for p in it.points[:12] if p.strip()] + ["가격·수량·구매 조건은 공식 발표에서 확인해 주세요."],
+        "conditions": [p.strip()[:200] for p in it.points[:20] if p.strip()] + ["가격·수량·구매 조건은 공식 발표에서 확인해 주세요."],
         "visual": VISUAL[category],
         "image_url": (c.get("ai") or {}).get("imageUrl"),
         "is_demo": False,
@@ -220,10 +232,14 @@ def publish(c: dict, it: Item, types: list[str], today: str) -> Optional[str]:
         "published_at": datetime.now(timezone.utc).isoformat(),
         "added_at": today,
     }
-    saved = rest("POST", "products?on_conflict=slug", [row], prefer="resolution=ignore-duplicates,return=representation")
-    if not saved:  # 이미 게시된 주소
+    # 같은 주소의 글이 이미 있으면 새 내용으로 덮어쓴다(다시 분석했을 때)
+    row.pop("added_at") if c.get("product_id") else None  # 처음 올린 날짜는 유지
+    saved = rest("POST", "products?on_conflict=slug", [row], prefer="resolution=merge-duplicates,return=representation")
+    if not saved:
         return None
     pid = saved[0]["id"]
+    rest("DELETE", f"product_sources?product_id=eq.{pid}")
+    rest("DELETE", f"product_offers?product_id=eq.{pid}")
     checked = c["collected_at"]
     rest("POST", "product_sources", [{"product_id": pid, "label": f"{c['source_name']} 원문", "url": c["source_url"], "type": "press_release", "checked_at": checked, "verified": False}])
     if it.price_jpy and 0 < it.price_jpy < 10_000_000:
@@ -241,7 +257,7 @@ def main() -> int:
     while len(cands) < LIMIT:
         page = rest(
             "GET",
-            "product_candidates?select=id,raw_title_ja,raw_excerpt_ja,source_name,source_url,collected_at,ai"
+            "product_candidates?select=id,raw_title_ja,raw_excerpt_ja,source_name,source_url,collected_at,ai,product_id"
             f"&ai_analyzed_at=is.null&review_status=eq.pending&order=collected_at.desc,id.asc&limit={min(1000, LIMIT - len(cands))}&offset={len(cands)}",
         ) or []
         cands += page
@@ -257,7 +273,7 @@ def main() -> int:
     size = 0
     for c in cands:
         n = len(c["raw_title_ja"]) + min(len(c.get("raw_excerpt_ja") or ""), EXCERPT_FOR_MODEL)
-        if cur and (len(cur) >= 20 or size + n > 14_000):
+        if cur and (len(cur) >= 12 or size + n > 20_000):
             batches.append(cur)
             cur, size = [], 0
         cur.append(c)

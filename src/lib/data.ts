@@ -121,8 +121,16 @@ export async function getAllProducts(): Promise<Product[]> {
   return cachedProducts();
 }
 
-/** 상품·굿즈·팝업 소식 (최근 등록순). 홈과 목록은 이것만 쓴다 */
-export const getProducts = async () => (await getAllProducts()).filter((p) => !isNews(p));
+/** 관심도: 0 추천(한국 사용자가 끌릴 만한 소식) · 1 보통 · 2 관심 낮음 */
+const rank = (p: Product) => (p.editorPick ? 0 : p.tags.includes("관심낮음") ? 2 : 1);
+
+/** 상품·굿즈·팝업 소식. 최근 등록일 순, 같은 날 안에서는 관심도 순. 홈과 목록은 이것만 쓴다 */
+export const getProducts = async () =>
+  (await getAllProducts())
+    .filter((p) => !isNews(p))
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => b.p.addedAt.localeCompare(a.p.addedAt) || rank(a.p) - rank(b.p) || a.i - b.i)
+    .map((x) => x.p);
 
 /** 일반 뉴스 */
 export const getNews = async () => (await getAllProducts()).filter(isNews);
