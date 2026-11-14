@@ -87,7 +87,7 @@ export function Footer() {
           JAPAN FINDS는 일본 상품 정보를 공식 출처와 함께 정리하는 독립 서비스예요. 상품을 직접 팔거나 대신 사 드리지 않아요. 가격과 판매 조건은 바뀔 수
           있으니 구매 전에 공식 판매처에서 다시 확인해 주세요.
         </p>
-        <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-bold text-ink-soft">
+        <ul className="mt-3 flex flex-wrap gap-x-1 font-bold text-ink-soft [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center [&_a]:px-2">
           <li>
             <Link href="/products">전체 소식</Link>
           </li>

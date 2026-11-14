@@ -227,8 +227,8 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               <Fact label="출시일">
                 {p.releaseDate ? (
                   <>
-                    {longDate(p.releaseDate)}
-                    {p.saleStatus === "upcoming" && <span className="ml-1.5 whitespace-nowrap text-coral-deep">{dday(p.releaseDate)}</span>}
+                    <span className="whitespace-nowrap">{longDate(p.releaseDate)}</span>
+                    {p.saleStatus === "upcoming" && <span className="block text-[12px] text-coral-deep">{dday(p.releaseDate)}</span>}
                   </>
                 ) : (
                   "확인 필요"
@@ -237,8 +237,8 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               <Fact label="판매 종료일">
                 {p.endDate ? (
                   <>
-                    {longDate(p.endDate)}
-                    {!ended && <span className="ml-1.5 whitespace-nowrap text-coral-deep">{dday(p.endDate)}</span>}
+                    <span className="whitespace-nowrap">{longDate(p.endDate)}</span>
+                    {!ended && <span className="block text-[12px] text-coral-deep">{dday(p.endDate)}</span>}
                   </>
                 ) : p.limited.types.includes("quantity") ? (
                   "수량 소진 시"
