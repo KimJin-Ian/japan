@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Jua, Zen_Maru_Gothic } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/next";
 import { Header, TabBar } from "@/components/Chrome";
 import { Footer } from "@/components/Bits";
 import { RateProvider } from "@/components/Rate";
