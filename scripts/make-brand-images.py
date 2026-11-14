@@ -15,8 +15,8 @@ FONT_JA = "C:/Windows/Fonts/YuGothB.ttc"
 
 CREAM, CREAM_DEEP = "#fffaf2", "#f8efe0"
 INK, INK_SOFT = "#3a3331", "#6b615d"
-CORAL, CORAL_DEEP = "#f0705f", "#c9483a"
-PINK, BUTTER, MINT, SKY, SKY_DEEP = "#ffdfe3", "#fff0b8", "#d6f2e6", "#dcecfb", "#8fb4dd"
+CORAL, CORAL_DEEP = "#e76d72", "#c4444c"
+PINK, BUTTER, MINT, SKY, SKY_DEEP = "#ffdfe3", "#ffe6a3", "#d6f2e6", "#dcecfb", "#8fb4dd"
 
 
 def kr(size: int, weight: int = 900) -> ImageFont.FreeTypeFont:

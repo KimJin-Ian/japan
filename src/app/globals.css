@@ -5,28 +5,28 @@
    docs/03b_디자인시스템.md 와 같은 값을 쓴다. */
 @theme inline {
   --color-paper: #ffffff;
-  --color-cream: #fffaf2;
-  --color-cream-deep: #f8efe0;
-  --color-ink: #3a3331;
-  --color-ink-soft: #6b615d;
-  --color-mute: #9a8f89;
-  --color-line: #efe6da;
+  --color-cream: #fff9f0;
+  --color-cream-deep: #f7ecdd;
+  --color-ink: #403632;
+  --color-ink-soft: #6f625c;
+  --color-mute: #a0938b;
+  --color-line: #f0e4d6;
 
-  --color-coral: #f0705f;
-  --color-coral-deep: #c9483a; /* 흰 바탕 위 글자용 (대비 4.5:1 이상) */
-  --color-pink: #ffdfe3;
-  --color-pink-deep: #f7a8b4;
+  --color-coral: #e76d72;
+  --color-coral-deep: #c4444c; /* 흰 바탕 위 글자용 (대비 4.5:1 이상) */
+  --color-pink: #fde6ec;
+  --color-pink-deep: #f6b7c8;
   --color-peach: #ffe4d2;
-  --color-butter: #fff0b8;
-  --color-mint: #d6f2e6;
+  --color-butter: #ffe6a3;
+  --color-mint: #c8e4d2;
   --color-mint-deep: #2f7d62;
   --color-sky: #dcecfb;
-  --color-lilac: #ebe2f8;
+  --color-lilac: #e8ddf3;
   --color-latte: #b89f8c;
 
-  --font-sans: var(--font-kr), "Apple SD Gothic Neo", "Malgun Gothic", "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  --font-display: var(--font-display), var(--font-maru), var(--font-kr), sans-serif;
-  --font-maru: var(--font-maru), var(--font-kr), "Hiragino Maru Gothic ProN", "Yu Gothic UI", sans-serif;
+  --font-sans: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  --font-display: var(--font-display), var(--font-maru), "Pretendard Variable", sans-serif;
+  --font-maru: var(--font-maru), "Pretendard Variable", "Hiragino Maru Gothic ProN", "Yu Gothic UI", sans-serif;
 
   --shadow-soft: 0 1px 2px rgb(120 90 70 / 0.05), 0 6px 18px -8px rgb(120 90 70 / 0.18);
   --shadow-pop: 0 2px 0 rgb(120 90 70 / 0.08), 0 14px 28px -12px rgb(120 90 70 / 0.28);
@@ -62,7 +62,7 @@ p {
 
 /* 은은한 도트 포장지 */
 .dots {
-  background-image: radial-gradient(rgb(240 112 95 / 0.13) 1.2px, transparent 1.4px);
+  background-image: radial-gradient(rgb(231 109 114 / 0.14) 1.2px, transparent 1.4px);
   background-size: 18px 18px;
 }
 /* 얇은 깅엄 체크 */
@@ -211,3 +211,30 @@ a.card:hover,
     scroll-behavior: auto !important;
   }
 }
+
+/* 종이 질감: 아주 옅은 결 */
+.paper {
+  background-image:
+    radial-gradient(rgb(231 109 114 / 0.1) 1.2px, transparent 1.4px),
+    linear-gradient(180deg, #fff4e6 0%, var(--color-cream) 60%);
+  background-size: 18px 18px, 100% 100%;
+}
+/* 손으로 붙인 듯한 라벨 */
+.label-tag {
+  display: inline-block;
+  transform: rotate(-2deg);
+  border-radius: 6px;
+  background: #fff;
+  padding: 3px 10px;
+  font-family: var(--font-maru);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-coral-deep);
+  box-shadow: 0 1px 0 rgb(120 90 70 / 0.12);
+}
+/* 살랑살랑: 히어로의 작은 장식 */
+@keyframes sway {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(3deg) translateY(-3px); }
+}
+.sway { animation: sway 5s ease-in-out infinite; transform-origin: 50% 80%; }

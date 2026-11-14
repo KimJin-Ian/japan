@@ -34,7 +34,7 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
             {c.name}
           </span>
         </h1>
-        <p className="mt-1.5 text-[13px] text-ink-soft">{c.desc}</p>
+        <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">{c.desc}</p>
       </div>
       <Suspense fallback={<p className="px-4 py-10 text-center text-[13px] text-mute">상품을 불러오는 중…</p>}>
         <Explorer products={products} fixedCategory={c.slug} brands={brandsOf(products)} />

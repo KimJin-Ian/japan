@@ -19,7 +19,7 @@ export default async function PopupPage() {
           일본 팝업스토어
         </span>
       </h1>
-      <p className="mt-1.5 text-[13px] text-ink-soft">기간이 끝나면 살 수 없는 것들이에요. 여행 날짜와 겹치는 팝업을 찾아보세요.</p>
+      <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">기간이 끝나면 살 수 없는 것들이에요. 여행 날짜와 겹치는 팝업을 찾아보세요.</p>
       <PopupList products={products} />
     </div>
   );

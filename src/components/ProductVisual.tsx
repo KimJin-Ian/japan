@@ -41,7 +41,7 @@ const MOTIFS: Record<VisualMotif, (t: T) => React.ReactNode> = {
       <circle cx="100" cy="42" r="13" fill="none" stroke={t.line} strokeWidth="4" />
       <path d="M100 55 v16" stroke={t.line} strokeWidth="4" strokeLinecap="round" />
       <ellipse cx="100" cy="112" rx="36" ry="40" fill={t.sub} stroke={t.main} strokeWidth="4" />
-      <path d="M68 132 q32 16 64 0 v14 q-32 14-64 0z" fill="#f0705f" />
+      <path d="M68 132 q32 16 64 0 v14 q-32 14-64 0z" fill="#e76d72" />
       {face(100, 106, t)}
     </g>
   ),
@@ -144,7 +144,7 @@ const MOTIFS: Record<VisualMotif, (t: T) => React.ReactNode> = {
       <rect x="46" y="74" width="108" height="20" rx="10" fill={t.line} opacity=".85" />
       <circle cx="78" cy="122" r="14" fill={t.sub} />
       <circle cx="122" cy="122" r="14" fill={t.sub} />
-      <path d="M100 74 v-14 q-14-16-20-4 q-2 12 20 18 q22-6 20-18 q-6-12-20 4" fill="none" stroke="#f0705f" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M100 74 v-14 q-14-16-20-4 q-2 12 20 18 q22-6 20-18 q-6-12-20 4" fill="none" stroke="#e76d72" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   ),
   stand: (t) => (

@@ -22,7 +22,7 @@ export default async function BrandsPage() {
           브랜드별로 보기
         </span>
       </h1>
-      <p className="mt-1.5 text-[13px] text-ink-soft">소식이 올라온 브랜드 {brands.length}곳이에요.</p>
+      <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">소식이 올라온 브랜드 {brands.length}곳이에요.</p>
 
       {many.length > 0 && (
         <section className="mt-6">

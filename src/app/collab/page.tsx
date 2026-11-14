@@ -23,7 +23,7 @@ export default async function CollabPage() {
           콜라보 한정 아이템
         </span>
       </h1>
-      <p className="mt-1.5 text-[13px] text-ink-soft">브랜드 × 캐릭터, 브랜드 × 브랜드. 최근 발표순이에요.</p>
+      <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">브랜드 × 캐릭터, 브랜드 × 브랜드. 최근 발표순이에요.</p>
       {live.length > 0 ? <ProductGrid products={live} /> : <p className="card dots px-6 py-12 text-center text-[14px] text-ink-soft">지금 진행 중인 콜라보 소식이 없어요.</p>}
       {ended.length > 0 && (
         <section className="mt-12">

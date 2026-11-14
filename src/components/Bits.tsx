@@ -22,7 +22,7 @@ export function SectionTitle({
   return (
     <div className="mb-3 flex items-end justify-between gap-3 px-4 lg:mb-5 lg:px-0">
       <div>
-        <p className="mb-1 font-maru text-[11px] font-bold tracking-[0.18em] text-coral-deep" lang="ja">
+        <p className="mb-1.5 font-maru text-[13px] font-black tracking-[0.08em] text-coral-deep" lang="ja">
           {ja}
         </p>
         <h2 className="font-display text-[23px] leading-tight text-ink lg:text-[28px]">
@@ -105,9 +105,6 @@ export function Footer() {
           </li>
           <li>
             <Link href="/news">일반 뉴스</Link>
-          </li>
-          <li>
-            <Link href="/saved">관심 상품</Link>
           </li>
         </ul>
       </div>

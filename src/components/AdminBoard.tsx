@@ -99,7 +99,7 @@ function CandidateCard({ c, products, onDecide }: { c: Candidate; products: Prod
 
       <div className="mt-3 grid gap-2 text-[13px] sm:grid-cols-2">
         <label className="flex min-h-11 items-center gap-2 rounded-xl bg-cream px-3">
-          <input type="checkbox" className="h-4 w-4 accent-[#f0705f]" checked={sourceOk} onChange={(e) => setSourceOk(e.target.checked)} disabled={!pending} />
+          <input type="checkbox" className="h-4 w-4 accent-[#e76d72]" checked={sourceOk} onChange={(e) => setSourceOk(e.target.checked)} disabled={!pending} />
           공식 출처를 직접 열어 확인했어요
         </label>
         <label className="flex min-h-11 items-center gap-2 rounded-xl bg-cream px-3">

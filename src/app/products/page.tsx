@@ -21,13 +21,13 @@ export default async function ProductsPage() {
         <h1 className="font-display text-[28px] text-ink lg:text-[34px]">
           <span className="tape">일본 소식 전체</span>
         </h1>
-        <p className="mt-1.5 text-[13px] text-ink-soft">
+        <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">
           한국어나 일본어 상품명, 브랜드, 캐릭터, 지역 이름으로 찾을 수 있어요.{" "}
           <Link href="/news" className="font-bold text-coral-deep underline underline-offset-4">
             일반 뉴스 보기
           </Link>
         </p>
-        <div className="mt-4 md:hidden">
+        <div className="mb-5 md:hidden">
           <SearchBox />
         </div>
       </div>

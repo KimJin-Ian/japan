@@ -6,7 +6,6 @@ import { PriceCompare } from "@/components/PriceCompare";
 import { ProductGrid } from "@/components/ProductCard";
 import { ProductVisual } from "@/components/ProductVisual";
 import { RequestCta, ViewTracker } from "@/components/RequestCta";
-import { SaveButton } from "@/components/SaveButton";
 import { KrSticker, LimitedStickers, StatusSticker } from "@/components/Stickers";
 import { eventsForProduct, jpOffer, related } from "@/lib/catalog";
 import { getAllProducts, getEvents, getProduct, getProducts } from "@/lib/data";
@@ -215,7 +214,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
 
             {/* 데스크톱 버튼 */}
             <div className="mt-5 hidden items-center gap-2 lg:flex">
-              <SaveButton id={p.id} />
               <RequestCta product={p} prefill={prefill} className="flex-1" />
             </div>
 
@@ -368,7 +366,6 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
       {/* 모바일 고정 버튼 */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-md items-center gap-2">
-          <SaveButton id={p.id} />
           <RequestCta product={p} prefill={prefill} className="flex-1" />
         </div>
       </div>

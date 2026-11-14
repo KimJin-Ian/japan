@@ -19,7 +19,7 @@ export default async function NewsPage() {
           일본 뉴스
         </span>
       </h1>
-      <p className="mb-5 mt-1.5 text-[13px] text-ink-soft">상품·굿즈 소식이 아닌 기업 발표, 서비스, 행사 소식이에요. 최근 발표순으로 {news.length}건.</p>
+      <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">상품·굿즈 소식이 아닌 기업 발표, 서비스, 행사 소식이에요. 최근 발표순으로 {news.length}건.</p>
       {news.length > 0 ? <ProductGrid products={news} /> : <p className="card dots px-6 py-12 text-center text-[14px] text-ink-soft">아직 올라온 뉴스가 없어요.</p>}
     </div>
   );

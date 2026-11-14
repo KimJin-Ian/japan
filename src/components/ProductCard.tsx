@@ -5,7 +5,6 @@ import { REGIONS, categoryShort } from "@/lib/taxonomy";
 import type { Product } from "@/lib/types";
 import { ProductVisual } from "./ProductVisual";
 import { Krw } from "./Rate";
-import { SaveHeart } from "./SaveButton";
 import { LimitedStickers } from "./Stickers";
 
 /** 지금 이 소식에서 가장 쓸모 있는 날짜 정보 한 줄 */
@@ -23,7 +22,6 @@ export function ProductCard({ product: p }: { product: Product }) {
   const ended = p.saleStatus === "ended";
   return (
     <article className="card card-hover relative flex h-full flex-col overflow-hidden">
-      <SaveHeart id={p.id} name={p.nameKo} />
       <Link href={`/products/${p.slug}`} className="flex h-full flex-col rounded-[20px]">
         <div className="relative m-1.5 mb-0">
           <ProductVisual product={p} className={`aspect-square rounded-2xl ${ended ? "opacity-60 grayscale-[35%]" : ""}`} />
@@ -59,7 +57,7 @@ export function ProductRow({ product: p }: { product: Product }) {
   const date = dateLine(p);
   return (
     <article className={`relative border-b border-line last:border-b-0 ${p.saleStatus === "ended" ? "opacity-60" : ""}`}>
-      <Link href={`/products/${p.slug}`} className="block py-3.5 pl-1 pr-12 hover:bg-cream/70">
+      <Link href={`/products/${p.slug}`} className="block px-1 py-3.5 hover:bg-cream/70">
         <div className="mb-1 flex flex-wrap items-center gap-1">
           <span className="sticker bg-cream-deep text-ink-soft">{categoryShort(p.category)}</span>
           {p.limited.status === "verified" && <LimitedStickers product={p} max={2} withJa={false} />}
@@ -74,8 +72,7 @@ export function ProductRow({ product: p }: { product: Product }) {
         </p>
       </Link>
       <div className="absolute right-0 top-3 [&>button]:static">
-        <SaveHeart id={p.id} name={p.nameKo} />
-      </div>
+        </div>
     </article>
   );
 }

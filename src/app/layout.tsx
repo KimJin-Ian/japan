@@ -1,14 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Jua, Noto_Sans_KR, Zen_Maru_Gothic } from "next/font/google";
+import { Jua, Zen_Maru_Gothic } from "next/font/google";
 import { Suspense } from "react";
 import { Header, TabBar } from "@/components/Chrome";
 import { Footer } from "@/components/Bits";
 import { RateProvider } from "@/components/Rate";
 import { getRate, getToday } from "@/lib/data";
 import { SITE_URL } from "@/lib/site";
+// 한글 본문: Pretendard (SIL OFL). 쓰는 글자 묶음만 내려받는 동적 서브셋
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 
-const kr = Noto_Sans_KR({ variable: "--font-kr", subsets: ["latin"], weight: ["400", "500", "700"], display: "swap" });
 const display = Jua({ variable: "--font-display", subsets: ["latin"], weight: "400", display: "swap" });
 const maru = Zen_Maru_Gothic({ variable: "--font-maru", subsets: ["latin"], weight: ["500", "700", "900"], display: "swap" });
 
@@ -35,12 +36,12 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = { themeColor: "#fffaf2", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#fff9f0", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [rate, today] = await Promise.all([getRate(), getToday()]);
   return (
-    <html lang="ko" className={`${kr.variable} ${display.variable} ${maru.variable} h-full antialiased`}>
+    <html lang="ko" className={`${display.variable} ${maru.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Suspense>
           <Header />

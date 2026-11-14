@@ -38,7 +38,7 @@ export default async function BrandPage({ params }: PageProps<"/brand/[slug]">) 
             {b.name}
           </span>
         </h1>
-        <p className="mt-1.5 text-[13px] text-ink-soft">
+        <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">
           상품 {products.length}개 · 일정 {events.length}건
         </p>
       </div>

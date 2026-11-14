@@ -58,7 +58,7 @@ export default async function SchedulePage() {
           발매 · 팝업 캘린더
         </span>
       </h1>
-      <p className="mt-1.5 text-[13px] text-ink-soft">발표에 날짜가 적힌 소식만 실어요. 한국과 일본은 시차가 없어 날짜 그대로예요.</p>
+      <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">발표에 날짜가 적힌 소식만 실어요. 한국과 일본은 시차가 없어 날짜 그대로예요.</p>
 
       {events.length > 0 && (
         <section className="mt-6">

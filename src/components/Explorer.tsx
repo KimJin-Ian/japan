@@ -70,6 +70,8 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
     }
     const s = next.toString();
     router.replace(s ? `${pathname}?${s}` : pathname, { scroll: false });
+    // 검색창에도 바뀐 검색어를 알려 준다
+    setTimeout(() => window.dispatchEvent(new Event("jf:query")), 350);
   };
   const toggle = (key: string, cur: string, v: string) => set({ [key]: cur === v ? "" : v });
   const toggleLimited = (v: string) => set({ limited: (limited.includes(v) ? limited.filter((x) => x !== v) : [...limited, v]).join(",") });
@@ -112,7 +114,10 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
   }, [products, sp, fixedCategory]);
 
   const activeCount = [limited.length > 0, region, brand, photo, price, status].filter(Boolean).length;
-  const reset = () => router.replace(q ? `${pathname}?q=${encodeURIComponent(q)}` : pathname, { scroll: false });
+  const reset = () => {
+    router.replace(pathname, { scroll: false });
+    setTimeout(() => window.dispatchEvent(new Event("jf:query")), 350);
+  };
 
   // 실제 데이터에 있는 값만 필터로 보여 준다. 고를 것이 없는 묶음은 통째로 숨긴다.
   const inScope = fixedCategory ? products.filter((p) => p.category === fixedCategory) : products;
@@ -173,6 +178,16 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
       )}
     </>
   );
+  // 지금 적용된 조건(검색어 포함). 눌러서 하나씩 지운다
+  const active: { label: string; clear: () => void }[] = [
+    ...(q ? [{ label: `검색: ${q}`, clear: () => set({ q: "" }) }] : []),
+    ...(status ? [{ label: STATUS_LABEL[status as keyof typeof STATUS_LABEL] ?? status, clear: () => set({ status: "" }) }] : []),
+    ...(region ? [{ label: REGIONS[region as RegionSlug] ?? region, clear: () => set({ region: "" }) }] : []),
+    ...limited.map((t) => ({ label: LIMITED[t as LimitedType]?.ko ?? t, clear: () => toggleLimited(t) })),
+    ...(price ? [{ label: PRICE_BANDS.find((b) => b.key === price)?.label ?? price, clear: () => set({ price: "" }) }] : []),
+    ...(photo ? [{ label: "사진 있는 소식만", clear: () => set({ photo: "" }) }] : []),
+    ...(brand ? [{ label: "브랜드", clear: () => set({ brand: "" }) }] : []),
+  ];
   const hasPanel = statuses.length > 1 || regionOpts.length > 1 || limitedOpts.length > 0 || priceOpts.length > 1 || hasPhoto;
 
   return (
@@ -200,8 +215,7 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
         <div>
           <div className="mb-4 flex items-center gap-2">
             <p className="mr-auto text-[13px] text-ink-soft" aria-live="polite">
-              {q && <b className="text-ink">‘{q}’ </b>}
-              상품 <b className="text-coral-deep">{result.length}</b>개
+              소식 <b className="text-coral-deep">{result.length}</b>건
             </p>
             <button type="button" onClick={() => setSheet(true)} className={`btn btn-secondary h-10 px-3.5 text-[13px] lg:hidden ${hasPanel ? "" : "hidden"}`}>
               필터{activeCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-coral px-1 text-[11px] text-white">{activeCount}</span>}
@@ -223,13 +237,29 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
             </select>
           </div>
 
+          {active.length > 0 && (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {active.map((a) => (
+                <button key={a.label} type="button" onClick={a.clear} aria-label={`${a.label} 조건 지우기`} className="sticker min-h-8 bg-pink px-3 text-ink">
+                  {a.label}
+                  <span aria-hidden className="ml-0.5 text-coral-deep">
+                    ✕
+                  </span>
+                </button>
+              ))}
+              <button type="button" onClick={reset} className="text-[12px] font-bold text-ink-soft underline underline-offset-4">
+                모두 지우기
+              </button>
+            </div>
+          )}
+
           {result.length > 0 ? (
             <div className="[&_ul]:xl:grid-cols-4">
               <ProductGrid products={result} />
             </div>
           ) : (
             <div className="card dots px-6 py-14 text-center">
-              <p className="font-display text-[22px] text-ink">조건에 맞는 상품이 아직 없어요</p>
+              <p className="font-display text-[22px] text-ink">조건에 맞는 소식이 아직 없어요</p>
               <p className="mx-auto mt-2 max-w-xs text-[13px] text-ink-soft">필터를 줄이거나 다른 말로 찾아보세요. 일본어 상품명으로도 찾을 수 있어요.</p>
               <button type="button" onClick={reset} className="btn btn-primary mt-5 h-11 px-5 text-[14px]">
                 필터 지우기
@@ -252,7 +282,7 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
             <div className="overflow-y-auto px-5 pb-4">{panel}</div>
             <div className="border-t border-line bg-white px-5 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
               <button type="button" onClick={() => setSheet(false)} className="btn btn-primary h-12 w-full text-[15px]">
-                상품 {result.length}개 보기
+                소식 {result.length}건 보기
               </button>
             </div>
           </div>
