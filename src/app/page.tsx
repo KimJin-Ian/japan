@@ -7,6 +7,7 @@ import { ProductCard, ProductRow } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
 import { characterAndGacha, comparable, popupItems, upcoming } from "@/lib/catalog";
 import { getProducts } from "@/lib/data";
+import { daysUntil } from "@/lib/format";
 import { gyeomsaReady, GYEOMSA_REQUEST_URL } from "@/lib/gyeomsa";
 import { SITE_URL } from "@/lib/site";
 import type { Product, VisualMotif } from "@/lib/types";
@@ -121,6 +122,11 @@ export default async function Home() {
   const products = await getProducts();
   const live = products.filter((p) => p.saleStatus !== "ended");
   const hasTag = (p: Product, t: string) => p.tags.some((x) => x.includes(t));
+  // 今週のかわいい: 최근 7일 글 가운데 한국에서 사랑받을 만한 것(추천)을 앞에, 그중에서도 캐릭터·가챠·문구·팝업을 맨 앞에 둔다
+  const recent = live.filter((p) => daysUntil(p.addedAt) >= -7 && !p.tags.includes("관심낮음"));
+  const cuteCats = ["character", "gacha", "stationery", "popup"];
+  const score = (p: Product) => (p.editorPick ? 0 : 2) + (cuteCats.includes(p.category) ? 0 : 1);
+  const cute = recent.map((p, i) => ({ p, i })).sort((a, b) => score(a.p) - score(b.p) || a.i - b.i).map((x) => x.p);
   const soon = upcoming(products).slice(0, 6);
   const compare = comparable(products);
 
@@ -164,7 +170,7 @@ export default async function Home() {
           }),
         }}
       />
-      <Hero products={products} />
+      <Hero products={cute.length >= 4 ? cute : products} />
 
       <div className="mx-auto max-w-6xl space-y-14 pt-9 lg:space-y-20 lg:px-4 lg:pt-12">
         {/* 카테고리: 파스텔 아이콘 카드 */}
@@ -185,10 +191,10 @@ export default async function Home() {
         </nav>
 
         {/* 今週のかわいい */}
-        {live.length > 0 && (
+        {cute.length > 0 && (
           <section>
-            <SectionTitle ja="今週のかわいい" title="이번 주 발견한 귀여운 아이템" note="일본 발표 최신순" href="/products" tape="var(--color-pink-deep)" />
-            <Rail products={live} />
+            <SectionTitle ja="今週のかわいい" title="이번 주 발견한 귀여운 아이템" note="최근 일주일, 한국에서 사랑받을 만한 것부터" href="/products" tape="var(--color-pink-deep)" />
+            <Rail products={cute} />
           </section>
         )}
 
