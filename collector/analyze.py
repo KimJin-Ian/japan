@@ -295,33 +295,31 @@ def main() -> int:
     analyzed = published = skipped = failed = 0
     stop = False
 
-    def run(batch: list[dict]) -> Optional[dict[int, Item]]:
+    def run(batch: list[dict]) -> tuple[int, int, int, int]:
+        """묶음 하나를 번역하고 저장까지 한다(여러 묶음이 동시에 돈다). (분석, 게시, 제외, 실패) 건수를 돌려준다."""
         nonlocal stop
         if stop:
-            return None
+            return 0, 0, 0, len(batch)
         try:
-            return analyze_batch(client, batch, today)
+            items = analyze_batch(client, batch, today)
         except anthropic.RateLimitError:
             stop = True
             print("   요청 한도에 걸렸습니다. 남은 것은 다음 실행에서 이어서 처리합니다.")
+            return 0, 0, 0, len(batch)
         except anthropic.APIStatusError as e:
-            print(f"   API 오류 {e.status_code}: {e.message} — 이 묶음은 다음 실행에서 다시 시도")
+            print(f"   API 오류 {e.status_code}: {e.message} — 다음 실행에서 다시 시도")
+            return 0, 0, 0, len(batch)
         except anthropic.APIConnectionError as e:
-            print(f"   연결 오류: {e} — 이 묶음은 다음 실행에서 다시 시도")
-        return None
+            print(f"   연결 오류: {e} — 다음 실행에서 다시 시도")
+            return 0, 0, 0, len(batch)
 
-    done = 0
-    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        for batch, items in zip(batches, pool.map(run, batches)):
-            done += len(batch)
-            if items is None:
-                failed += len(batch)
+        a = pub = skip = fail = 0
+        for i, c in enumerate(batch):
+            it = items.get(i)
+            if it is None:
+                fail += 1
                 continue
-            for i, c in enumerate(batch):
-                it = items.get(i)
-                if it is None:
-                    failed += 1
-                    continue
+            try:
                 types = sorted({t for w, t in LIMITED_WORDS if w in c["raw_title_ja"]})
                 stamp = datetime.now(timezone.utc).isoformat()
                 patch = {"ai": to_ai_json(c, it, types), "ai_model": MODEL, "ai_analyzed_at": stamp}
@@ -331,13 +329,27 @@ def main() -> int:
                         patch.update({"review_status": "approved", "review_note": "자동 게시", "reviewed_at": stamp})
                         if pid:
                             patch["product_id"] = pid
-                            published += 1
+                            pub += 1
                     else:
                         patch.update({"review_status": "rejected", "review_note": "자동 분류: 소비자 상품 아님", "reviewed_at": stamp})
-                        skipped += 1
+                        skip += 1
                 rest("PATCH", f"product_candidates?id=eq.{c['id']}", patch)
-                analyzed += 1
-            print(f"   {done}/{len(cands)} 처리")
+                a += 1
+            except Exception as e:  # 글 하나가 저장되지 않아도 나머지는 계속한다
+                fail += 1
+                print(f"   저장 실패: {c['source_url']} {str(e)[:120]}")
+        return a, pub, skip, fail
+
+    done = 0
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        for batch, (a, pub, skip, fail) in zip(batches, pool.map(run, batches)):
+            analyzed += a
+            published += pub
+            skipped += skip
+            failed += fail
+            done += len(batch)
+            if done % 100 < len(batch):
+                print(f"   {done}/{len(cands)} 처리", flush=True)
 
     print(f"완료: 분석 {analyzed}건 · 게시 {published}건 · 제외 {skipped}건 · 다음에 다시 {failed}건")
     return 0
