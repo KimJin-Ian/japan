@@ -43,7 +43,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # 기본은 Haiku(하루 2,000건 이상을 번역하므로). 바꾸려면 저장소 Variables 에 ANALYZE_MODEL 을 넣는다 (예: claude-opus-5-5)
           ANALYZE_MODEL: ${{ vars.ANALYZE_MODEL || 'claude-haiku-5-5' }}
-          ANALYZE_LIMIT: "4000"
+          ANALYZE_LIMIT: "6000"
         run: |
           pip install -q anthropic pydantic
           python collector/analyze.py

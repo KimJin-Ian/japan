@@ -46,7 +46,10 @@ FALLBACK = {} if "haiku" in MODEL else {"betas": ["server-side-fallback-2026-07-
 LIMIT = int(os.environ.get("ANALYZE_LIMIT", "4000"))
 AUTO_PUBLISH = os.environ.get("AUTO_PUBLISH", "1") == "1"
 PUBLISH_ALL = os.environ.get("PUBLISH_ALL", "1") == "1"
-WORKERS = int(os.environ.get("ANALYZE_WORKERS", "4"))  # 동시에 보내는 요청 수
+WORKERS = int(os.environ.get("ANALYZE_WORKERS", "8"))  # 동시에 보내는 요청 수
+# 한 요청에 넣는 글 수. 여러 개를 묶으면 모델이 번호를 밀려 적어 다른 글의 내용이 붙는 일이 있었다(2026-11-16).
+# 그래서 기본은 글 하나에 요청 하나다.
+BATCH = max(1, int(os.environ.get("ANALYZE_BATCH", "1")))
 EXCERPT_FOR_MODEL = 6000  # 글 하나에서 모델에 보여 주는 최대 글자 수
 
 Category = Literal["character", "gacha", "fashion", "beauty", "stationery", "living", "regional", "popup"]
@@ -160,7 +163,13 @@ def analyze_batch(client: anthropic.Anthropic, cands: list[dict], today: str) ->
     if response.stop_reason == "refusal" or response.parsed_output is None:
         print(f"   건너뜀: stop_reason={response.stop_reason}")
         return {}
-    return {it.index: it for it in response.parsed_output.items if 0 <= it.index < len(cands)}
+    items = response.parsed_output.items
+    if len(cands) == 1:  # 글 하나에 요청 하나: 번호에 기대지 않는다
+        return {0: items[0]} if len(items) == 1 else {}
+    # 묶음일 때는 개수와 번호가 정확히 맞을 때만 받는다. 아니면 통째로 버리고 다음에 다시 한다
+    if sorted(it.index for it in items) != list(range(len(cands))):
+        return {}
+    return {it.index: it for it in items}
 
 
 def to_ai_json(c: dict, it: Item, types: list[str]) -> dict:
@@ -273,7 +282,7 @@ def main() -> int:
     size = 0
     for c in cands:
         n = len(c["raw_title_ja"]) + min(len(c.get("raw_excerpt_ja") or ""), EXCERPT_FOR_MODEL)
-        if cur and (len(cur) >= 12 or size + n > 20_000):
+        if cur and (len(cur) >= BATCH or size + n > 20_000):
             batches.append(cur)
             cur, size = [], 0
         cur.append(c)

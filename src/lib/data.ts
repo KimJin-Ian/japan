@@ -140,16 +140,46 @@ export async function getEvents(): Promise<EventItem[]> {
   return cachedEvents();
 }
 
+const SELECT = "*, product_offers(*), product_sources(*)";
+
 async function cachedProducts(): Promise<Product[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("products");
   if (!dbReady) return PRODUCTS;
-  const { data, error } = await publicDb().from("products").select("*, product_offers(*), product_sources(*)")
-    .order("published_at", { ascending: false })
-    .limit(3000);
+  // 상품·굿즈 소식은 전부(1000행씩 나눠 읽는다), 일반 뉴스는 최근 400건만 목록에 올린다.
+  // 목록에서 빠진 오래된 뉴스도 지워지는 것은 아니며, 주소로 열면 그대로 보인다(getProduct).
+  const rows: any[] = [];
+  for (let from = 0; from < 8000; from += 1000) {
+    const { data, error } = await publicDb()
+      .from("products")
+      .select(SELECT)
+      .not("tags", "cs", "{뉴스}")
+      .order("published_at", { ascending: false })
+      .order("id")
+      .range(from, from + 999);
+    if (error) throw new Error(`상품을 불러오지 못했습니다: ${error.message}`);
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+  const news = await publicDb().from("products").select(SELECT).contains("tags", ["뉴스"]).order("published_at", { ascending: false }).limit(400);
+  if (news.error) throw new Error(`뉴스를 불러오지 못했습니다: ${news.error.message}`);
+  return [...rows, ...news.data]
+    .map(toProduct)
+    .map((p, i) => ({ p, i, t: (rows[i] ?? news.data[i - rows.length]).published_at as string }))
+    .sort((a, b) => b.t.localeCompare(a.t))
+    .map((x) => x.p);
+}
+
+/** 글 하나를 주소(slug)로 바로 읽는다. 목록에 없는 오래된 글도 열린다 */
+async function cachedProduct(slug: string): Promise<Product | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products");
+  if (!dbReady) return PRODUCTS.find((p) => p.slug === slug) ?? null;
+  const { data, error } = await publicDb().from("products").select(SELECT).eq("slug", slug).limit(1);
   if (error) throw new Error(`상품을 불러오지 못했습니다: ${error.message}`);
-  return data.map(toProduct);
+  return data.length ? toProduct(data[0]) : null;
 }
 
 async function cachedEvents(): Promise<EventItem[]> {
@@ -180,7 +210,10 @@ export async function getRate(): Promise<{ krwPer100Jpy: number; label: string; 
   return { krwPer100Jpy: Math.round(Number(data[0].rate) * 1000) / 10, label: data[0].source, isDemo: false };
 }
 
-export const getProduct = async (slug: string) => (await getAllProducts()).find((p) => p.slug === slug);
+export const getProduct = async (slug: string) => {
+  setToday(await getToday());
+  return (await cachedProduct(slug)) ?? undefined;
+};
 export const getEvent = async (slug: string) => (await getEvents()).find((e) => e.slug === slug);
 
 /* ---------- 관리자 화면 (캐시하지 않음) ---------- */

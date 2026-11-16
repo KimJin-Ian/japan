@@ -51,6 +51,8 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
   const pathname = usePathname();
   const sp = useSearchParams();
   const [sheet, setSheet] = useState(false);
+  // 한 번에 60건씩 보여 주고 더 보기로 늘린다
+  const [shown, setShown] = useState(60);
 
   const q = sp.get("q") ?? "";
   const category = fixedCategory ?? sp.get("category") ?? "";
@@ -255,7 +257,14 @@ export function Explorer({ products, fixedCategory }: { products: Product[]; fix
 
           {result.length > 0 ? (
             <div className="[&_ul]:xl:grid-cols-4">
-              <ProductGrid products={result} />
+              <ProductGrid products={result.slice(0, shown)} />
+              {result.length > shown && (
+                <div className="mt-6 text-center">
+                  <button type="button" onClick={() => setShown((n) => n + 60)} className="btn btn-secondary h-12 px-7 text-[14px]">
+                    더 보기 ({result.length - shown}건 남음)
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="card dots px-6 py-14 text-center">
