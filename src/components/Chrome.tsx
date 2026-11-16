@@ -111,9 +111,6 @@ export function Header() {
           <Link href="/brands" className="rounded-full px-3 py-2 hover:bg-cream-deep">
             브랜드
           </Link>
-          <Link href="/news" className="rounded-full px-3 py-2 hover:bg-cream-deep">
-            뉴스
-          </Link>
         </nav>
         <Link href="/products" aria-label="검색" className="ml-auto grid h-11 w-11 place-items-center rounded-full text-ink-soft md:hidden">
           <Icon d={I.search} />
@@ -136,10 +133,10 @@ export function Header() {
 
 const TABS = [
   { href: "/", label: "홈", d: I.home, match: (p: string) => p === "/" },
-  { href: "/products", label: "소식", d: I.search, match: (p: string) => ["/products", "/category", "/brand", "/collab"].some((x) => p.startsWith(x)) },
+  { href: "/products", label: "소식", d: I.search, match: (p: string) => ["/products", "/category", "/collab"].some((x) => p.startsWith(x)) },
   { href: "/schedule", label: "캘린더", d: I.cal, match: (p: string) => p.startsWith("/schedule") },
   { href: "/popup", label: "팝업", d: I.shop, match: (p: string) => p.startsWith("/popup") },
-  { href: "/news", label: "뉴스", d: I.news, match: (p: string) => p.startsWith("/news") },
+  { href: "/brands", label: "브랜드", d: I.news, match: (p: string) => p.startsWith("/brand") },
 ];
 
 export function TabBar() {

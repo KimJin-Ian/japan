@@ -111,14 +111,13 @@ export async function getToday(): Promise<string> {
   return new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
 }
 
-/** 일반 뉴스 성격의 글에 붙는 태그. 수집기(analyze.py)가 '소비자 상품 아님'으로 본 글에 붙인다 */
-export const NEWS_TAG = "뉴스";
-const isNews = (p: Product) => p.tags.includes(NEWS_TAG);
+/** 예전에 일반 뉴스에 붙였던 태그. 이제는 게시하지 않지만, 남아 있는 글이 있어도 화면에 나오지 않게 거른다 */
+const isNews = (p: Product) => p.tags.includes("뉴스");
 
-/** 게시된 글 전체 (상품 소식 + 일반 뉴스). 상세 페이지 조회·사이트맵용 */
+/** 게시된 글 전체. 상세 페이지 미리 만들기·사이트맵용 */
 export async function getAllProducts(): Promise<Product[]> {
   setToday(await getToday());
-  return cachedProducts();
+  return (await cachedProducts()).filter((p) => !isNews(p));
 }
 
 /** 관심도: 0 추천(한국 사용자가 끌릴 만한 소식) · 1 보통 · 2 관심 낮음 */
@@ -132,8 +131,6 @@ export const getProducts = async () =>
     .sort((a, b) => b.p.addedAt.localeCompare(a.p.addedAt) || rank(a.p) - rank(b.p) || a.i - b.i)
     .map((x) => x.p);
 
-/** 일반 뉴스 */
-export const getNews = async () => (await getAllProducts()).filter(isNews);
 
 export async function getEvents(): Promise<EventItem[]> {
   setToday(await getToday());
@@ -147,28 +144,15 @@ async function cachedProducts(): Promise<Product[]> {
   cacheLife("minutes");
   cacheTag("products");
   if (!dbReady) return PRODUCTS;
-  // 상품·굿즈 소식은 전부(1000행씩 나눠 읽는다), 일반 뉴스는 최근 400건만 목록에 올린다.
-  // 목록에서 빠진 오래된 뉴스도 지워지는 것은 아니며, 주소로 열면 그대로 보인다(getProduct).
+  // 1000행씩 나눠 전부 읽는다. (상품·굿즈 소식이 아닌 글은 수집기가 게시하지 않는다)
   const rows: any[] = [];
-  for (let from = 0; from < 8000; from += 1000) {
-    const { data, error } = await publicDb()
-      .from("products")
-      .select(SELECT)
-      .not("tags", "cs", "{뉴스}")
-      .order("published_at", { ascending: false })
-      .order("id")
-      .range(from, from + 999);
+  for (let from = 0; from < 10000; from += 1000) {
+    const { data, error } = await publicDb().from("products").select(SELECT).order("published_at", { ascending: false }).order("id").range(from, from + 999);
     if (error) throw new Error(`상품을 불러오지 못했습니다: ${error.message}`);
     rows.push(...data);
     if (data.length < 1000) break;
   }
-  const news = await publicDb().from("products").select(SELECT).contains("tags", ["뉴스"]).order("published_at", { ascending: false }).limit(400);
-  if (news.error) throw new Error(`뉴스를 불러오지 못했습니다: ${news.error.message}`);
-  return [...rows, ...news.data]
-    .map(toProduct)
-    .map((p, i) => ({ p, i, t: (rows[i] ?? news.data[i - rows.length]).published_at as string }))
-    .sort((a, b) => b.t.localeCompare(a.t))
-    .map((x) => x.p);
+  return rows.map(toProduct);
 }
 
 /** 글 하나를 주소(slug)로 바로 읽는다. 목록에 없는 오래된 글도 열린다 */

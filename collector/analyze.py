@@ -16,7 +16,7 @@
   ANALYZE_MODEL   기본 claude-opus-5-5 (비용을 줄이려면 claude-haiku-5-5)
   ANALYZE_LIMIT   한 번에 처리할 후보 수, 기본 4000
   AUTO_PUBLISH    1이면 분석 직후 게시(기본), 0이면 후보만 채우고 관리자 승인을 기다린다
-  PUBLISH_ALL     1이면 수집한 글을 전부 게시한다(기본 1). 0이면 '소비자 상품 아님'으로 판단된 글은 올리지 않는다
+  PUBLISH_ALL     기본 0: 상품·굿즈·팝업 소식만 게시하고 일반 뉴스는 올리지 않는다. 1이면 전부 게시한다
 
 실행:
   python collector/analyze.py --dry-run   # 모델을 부르지 않고 대상 건수만 확인
@@ -45,7 +45,7 @@ MODEL = os.environ.get("ANALYZE_MODEL", "claude-opus-5-5")
 FALLBACK = {} if "haiku" in MODEL else {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
 LIMIT = int(os.environ.get("ANALYZE_LIMIT", "4000"))
 AUTO_PUBLISH = os.environ.get("AUTO_PUBLISH", "1") == "1"
-PUBLISH_ALL = os.environ.get("PUBLISH_ALL", "1") == "1"
+PUBLISH_ALL = os.environ.get("PUBLISH_ALL", "0") == "1"
 WORKERS = int(os.environ.get("ANALYZE_WORKERS", "8"))  # 동시에 보내는 요청 수
 # 한 요청에 넣는 글 수. 여러 개를 묶으면 모델이 번호를 밀려 적어 다른 글의 내용이 붙는 일이 있었다(2026-11-16).
 # 그래서 기본은 글 하나에 요청 하나다.

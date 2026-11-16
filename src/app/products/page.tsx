@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { SearchBox } from "@/components/Chrome";
 import { Explorer } from "@/components/Explorer";
@@ -22,10 +21,7 @@ export default async function ProductsPage() {
           <span className="tape">일본 소식 전체</span>
         </h1>
         <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">
-          한국어나 일본어 상품명, 브랜드, 캐릭터, 지역 이름으로 찾을 수 있어요.{" "}
-          <Link href="/news" className="font-bold text-coral-deep underline underline-offset-4">
-            일반 뉴스 보기
-          </Link>
+          한국어나 일본어 상품명, 브랜드, 캐릭터, 지역 이름으로 찾을 수 있어요.
         </p>
         <div className="mb-5 md:hidden">
           <SearchBox />
