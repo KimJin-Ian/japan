@@ -19,8 +19,8 @@ import type { Product } from "@/lib/types";
 export const instant = false;
 
 export async function generateStaticParams() {
-  // 최근 글 200개만 미리 만들어 두고, 나머지는 처음 열릴 때 만든다
-  const list = (await getAllProducts()).slice(0, 200).map((p) => ({ slug: p.slug }));
+  // 최근 글 100개만 미리 만들어 두고, 나머지는 처음 열릴 때 만든다
+  const list = (await getAllProducts()).slice(0, 100).map((p) => ({ slug: p.slug }));
   // Cache Components 빌드는 최소 1개를 요구한다. 비어 있으면 404로 떨어지는 자리표시자를 넣는다
   return list.length ? list : [{ slug: "none" }];
 }

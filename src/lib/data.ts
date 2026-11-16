@@ -138,6 +138,9 @@ export async function getEvents(): Promise<EventItem[]> {
 }
 
 const SELECT = "*, product_offers(*), product_sources(*)";
+// 목록에 필요한 열만
+const LIST_SELECT =
+  "id,slug,name_ko,name_ja,brand,brand_slug,category,character,tags,summary,limited_status,limited_types,region,places,release_date,end_date,sale_status,kr_official,editor_pick,added_at,visual,image_url,is_demo,product_offers(country,seller,price,currency,url,checked_at,tax_included,same_item_verified)";
 
 async function cachedProducts(): Promise<Product[]> {
   "use cache";
@@ -147,12 +150,17 @@ async function cachedProducts(): Promise<Product[]> {
   // 1000행씩 나눠 전부 읽는다. (상품·굿즈 소식이 아닌 글은 수집기가 게시하지 않는다)
   const rows: any[] = [];
   for (let from = 0; from < 10000; from += 1000) {
-    const { data, error } = await publicDb().from("products").select(SELECT).order("published_at", { ascending: false }).order("id").range(from, from + 999);
+    const { data, error } = await publicDb().from("products").select(LIST_SELECT).order("published_at", { ascending: false }).order("id").range(from, from + 999);
     if (error) throw new Error(`상품을 불러오지 못했습니다: ${error.message}`);
     rows.push(...data);
     if (data.length < 1000) break;
   }
-  return rows.map(toProduct);
+  // 목록용으로 가볍게 만든다: 소개는 앞부분만, 자세한 항목·출처는 상세 페이지에서만 읽는다.
+  // (글이 수천 건이 되면서 목록 데이터가 너무 커져 빌드가 멈추던 문제)
+  return rows.map((r) => {
+    const p = toProduct(r);
+    return { ...p, summary: p.summary.length > 140 ? `${p.summary.slice(0, 140)}…` : p.summary, conditions: [], sources: [] };
+  });
 }
 
 /** 글 하나를 주소(slug)로 바로 읽는다. 목록에 없는 오래된 글도 열린다 */

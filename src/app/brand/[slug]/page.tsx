@@ -9,7 +9,11 @@ import { getEvents, getProducts } from "@/lib/data";
 export const instant = false;
 
 export async function generateStaticParams() {
-  const list = brandsOf(await getProducts()).map((b) => ({ slug: b.slug }));
+  // 브랜드가 천 개를 넘어서 전부 미리 만들면 빌드가 끝나지 않는다. 소식이 많은 60곳만 미리 만들고 나머지는 처음 열릴 때 만든다
+  const list = brandsOf(await getProducts())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 60)
+    .map((b) => ({ slug: b.slug }));
   // Cache Components 빌드는 최소 1개를 요구한다. 비어 있으면 404로 떨어지는 자리표시자를 넣는다
   return list.length ? list : [{ slug: "none" }];
 }
