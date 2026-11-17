@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JAPAN FINDS 홈 개선 시안 A·B·C</title>
+<style>
+  :root{--cream:#fff9f0;--ink:#403632;--soft:#6f625c;--mute:#a0938b;--line:#f0e4d6;--coral:#e76d72;--coral-d:#c4444c;--pink:#fde6ec;--pink-d:#f6b7c8;--butter:#ffe6a3;--mint:#c8e4d2;--lilac:#e8ddf3;--sky:#dcecfb}
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4eee4;color:var(--ink);font-family:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;word-break:keep-all}
+  h1{font-size:22px;margin:0 0 6px} .lead{color:var(--soft);font-size:14px;margin:0 0 22px;line-height:1.6}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  @media(max-width:1000px){.row{grid-template-columns:1fr;max-width:380px;margin:0 auto}}
+  .col h2{font-size:17px;margin:0 0 4px} .col .why{font-size:13px;color:var(--soft);line-height:1.6;margin:0 0 12px;min-height:84px}
+  .tagline{display:inline-block;background:var(--coral);color:#fff;font-weight:700;font-size:11px;border-radius:99px;padding:3px 10px;margin-bottom:8px}
+  .phone{background:var(--cream);border-radius:34px;border:8px solid #2f2926;overflow:hidden;height:720px;position:relative;box-shadow:0 18px 40px -18px rgba(80,50,30,.5)}
+  .scr{height:100%;overflow-y:auto;padding-bottom:64px;scrollbar-width:none} .scr::-webkit-scrollbar{display:none}
+  .bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);background:rgba(255,249,240,.95);position:sticky;top:0;z-index:5}
+  .logo{font-weight:900;font-size:14px;letter-spacing:-.3px} .logo b{color:var(--coral-d)}
+  .mark{width:22px;height:22px;border-radius:7px;background:var(--coral);display:inline-block}
+  .ico{margin-left:auto;width:30px;height:30px;border-radius:99px;background:#fff;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;scrollbar-width:none} .chips::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--soft)}
+  .chip.on{background:var(--coral);border-color:var(--coral);color:#fff}
+  .sec{padding:4px 12px 0;margin-top:10px} .sec .ja{font-size:10px;font-weight:800;color:var(--coral-d);letter-spacing:.06em}
+  .sec h3{font-size:16px;margin:2px 0 8px;display:inline;background:linear-gradient(transparent 58%,var(--pink-d) 58%)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 12px}
+  .card{background:#fff;border-radius:16px;padding:5px;box-shadow:0 5px 14px -8px rgba(120,90,70,.35);position:relative}
+  .img{border-radius:12px;aspect-ratio:1;background-size:cover;background-position:center;background-color:var(--pink)}
+  .img.tall{aspect-ratio:3/4} .img.wide{aspect-ratio:16/10}
+  .t{font-size:12px;font-weight:700;line-height:1.35;margin:6px 4px 2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .m{font-size:10px;color:var(--mute);margin:0 4px 4px} .p{font-weight:800;color:var(--ink);font-size:12px}
+  .st{position:absolute;left:9px;top:9px;background:#fff;color:var(--coral-d);font-size:9px;font-weight:800;border-radius:99px;padding:2px 7px;transform:rotate(-3deg)}
+  .st.d{background:var(--coral);color:#fff}
+  .rail{display:flex;gap:8px;overflow-x:auto;padding:8px 12px;scrollbar-width:none} .rail::-webkit-scrollbar{display:none} .rail .card{min-width:128px;width:128px}
+  .hero1{margin:10px 12px 0;border-radius:20px;overflow:hidden;position:relative;aspect-ratio:4/3;background-size:cover;background-position:center}
+  .hero1 .cap{position:absolute;inset:auto 0 0 0;padding:26px 12px 10px;background:linear-gradient(transparent,rgba(40,30,25,.78));color:#fff}
+  .hero1 .cap b{font-size:15px;display:block;line-height:1.3} .hero1 .cap span{font-size:11px;opacity:.9}
+  .mos{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:6px 12px 0} .mos .img{border-radius:10px}
+  .masonry{columns:2;column-gap:8px;padding:8px 12px} .masonry .card{break-inside:avoid;margin-bottom:8px}
+  .tab{position:absolute;inset:auto 0 0 0;height:54px;background:rgba(255,255,255,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);font-size:10px;font-weight:700;color:var(--mute);text-align:center;align-items:center}
+  .tab i{display:block;width:34px;height:18px;border-radius:99px;margin:0 auto 2px} .tab .on{color:var(--coral-d)} .tab .on i{background:var(--pink)}
+  .note{margin-top:26px;background:#fff;border-radius:18px;padding:18px 20px;font-size:13px;line-height:1.75;color:var(--soft)} .note b{color:var(--ink)}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px} th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top} th{color:var(--mute);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>JAPAN FINDS 홈 개선 시안</h1>
+  <p class="lead">공통: 큰 문구와 큰 검색창을 없애고, 검색은 상단 돋보기 아이콘으로 줄입니다. 들어오자마자 한국에서 인기 있는 글이 사진으로 바로 보입니다. 아래 글과 사진은 지금 사이트에 고정돼 있는 실제 글입니다. 각 화면은 위아래로 스크롤됩니다.</p>
+
+  <div class="row">
+    <!-- A -->
+    <div class="col">
+      <span class="tagline">시안 A · 바로 그리드</span>
+      <h2>첫 화면부터 2열 카드</h2>
+      <p class="why">가장 단순합니다. 상단 한 줄 칩으로 종류만 고르고, 그 아래는 전부 카드입니다. 첫 화면에 4장, 한 번 내리면 8장이 보입니다. 구현이 가장 빠릅니다.</p>
+      <div class="phone"><div class="scr">
+        <div class="bar"><span class="mark"></span><span class="logo">JAPAN <b>FINDS</b></span><span class="ico">🔍</span></div>
+        <div class="chips"><span class="chip on">인기</span><span class="chip">캐릭터</span><span class="chip">팝업</span><span class="chip">콜라보</span><span class="chip">패션</span><span class="chip">뷰티</span><span class="chip">먹거리</span></div>
+        <div class="grid">
+          <div class="card"><span class="st d">곧 출시 D-14</span><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/2319/838/2319-838-588c8d2b1a166c719402bba8d2ea63f0-1600x900.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">폼폼푸린 30주년 한정 잡화 시리즈</p><p class="m"><span class="p">390엔~</span> · 12.01 출시</p></div>
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/1719/9183/1719-9183-9b64ef78cac8375620f93a01d73f21f2-1127x1600.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">치이카와 9권 (통상판·특장판)</p><p class="m"><span class="p">1,375엔</span> · 11.20 출시</p></div>
+          <div class="card"><span class="st">팝업</span><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/13288/493/13288-493-327185f89b28174b19022e6efdc4cb00-1280x670.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">장송의 프리렌 팝업스토어 오리지널 굿즈</p><p class="m"><span class="p">790엔~</span> · 12.08까지</p></div>
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/22901/2286/22901-2286-1317f54aee486bbeeb72c4065c510390-1920x1280.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">하울의 움직이는 성 만년 달력</p><p class="m"><span class="p">13,200엔</span> · 11.21 출시</p></div>
+          <div class="card"><div class="img" style="background-image:url('https://news.walkerplus.com/article/1452028/18951715_615.jpg')"></div><p class="t">유니클로 스누피 UT 키즈 컬렉션</p><p class="m"><span class="p">1,500엔</span> · 12.01 출시</p></div>
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/38918/205/38918-205-7e9613a6f1d3590b9727f705fca89ee7-3900x2606.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">스누피 디저트 커피 2종</p><p class="m"><span class="p">410엔</span> · 판매 중</p></div>
+        </div>
+        <div class="sec"><div class="ja">ポップアップ</div><h3>지금 열리는 팝업스토어</h3></div>
+        <div class="rail">
+          <div class="card"><div class="img" style="background-image:url('https://animeanime.jp/imgs/rss/957077.jpg')"></div><p class="t">장송의 프리렌 팝업 굿즈</p><p class="m">도쿄 · 11.25 시작</p></div>
+          <div class="card"><div class="img" style="background:var(--mint)"></div><p class="t">스누피타운숍 히로시마 파르코점</p><p class="m">히로시마 · 진행 중</p></div>
+          <div class="card"><div class="img" style="background:var(--lilac)"></div><p class="t">메디콤 토이 크리스마스 팝업</p><p class="m">도쿄 · 진행 중</p></div>
+        </div>
+        </div><div class="tab"><span class="on"><i></i>홈</span><span><i></i>소식</span><span><i></i>캘린더</span><span><i></i>팝업</span><span><i></i>브랜드</span></div>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="col">
+      <span class="tagline">시안 B · 매거진</span>
+      <h2>대표 1장 + 작은 4장, 이어서 가로 줄</h2>
+      <p class="why">맨 위에 가장 눈길 끄는 글 1장을 크게, 바로 아래 4장을 작게 둡니다. 그 뒤는 "팝업 / 콜라보 / 캐릭터" 줄을 옆으로 넘깁니다. 잡지 느낌이 가장 강하고 종류별로 훑기 좋습니다.</p>
+      <div class="phone"><div class="scr">
+        <div class="bar"><span class="mark"></span><span class="logo">JAPAN <b>FINDS</b></span><span class="ico">🔍</span></div>
+        <div class="hero1" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/2319/838/2319-838-588c8d2b1a166c719402bba8d2ea63f0-1600x900.jpg?format=jpeg&auto=webp&fit=bounds&width=900')"><span class="st d" style="left:12px;top:12px">곧 출시 D-14</span><div class="cap"><b>폼폼푸린 30주년 한정 잡화 시리즈</b><span>390엔~ · 12월 1일 출시 · 산큐마트</span></div></div>
+        <div class="mos">
+          <div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/1719/9183/1719-9183-9b64ef78cac8375620f93a01d73f21f2-1127x1600.jpg?format=jpeg&auto=webp&fit=bounds&width=300')"></div>
+          <div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/13288/493/13288-493-327185f89b28174b19022e6efdc4cb00-1280x670.jpg?format=jpeg&auto=webp&fit=bounds&width=300')"></div>
+          <div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/22901/2286/22901-2286-1317f54aee486bbeeb72c4065c510390-1920x1280.jpg?format=jpeg&auto=webp&fit=bounds&width=300')"></div>
+          <div class="img" style="background-image:url('https://news.walkerplus.com/article/1452028/18951715_615.jpg')"></div>
+        </div>
+        <div class="sec"><div class="ja">今週のかわいい</div><h3>이번 주 인기 아이템</h3></div>
+        <div class="rail">
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/1719/9183/1719-9183-9b64ef78cac8375620f93a01d73f21f2-1127x1600.jpg?format=jpeg&auto=webp&fit=bounds&width=400')"></div><p class="t">치이카와 9권</p><p class="m"><span class="p">1,375엔</span></p></div>
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/38918/205/38918-205-7e9613a6f1d3590b9727f705fca89ee7-3900x2606.jpg?format=jpeg&auto=webp&fit=bounds&width=400')"></div><p class="t">스누피 디저트 커피 2종</p><p class="m"><span class="p">410엔</span></p></div>
+          <div class="card"><div class="img" style="background-image:url('https://news.walkerplus.com/article/1452028/18951715_615.jpg')"></div><p class="t">유니클로 스누피 UT 키즈</p><p class="m"><span class="p">1,500엔</span></p></div>
+        </div>
+        <div class="sec"><div class="ja">ポップアップ</div><h3>지금 열리는 팝업스토어</h3></div>
+        <div class="rail">
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/13288/493/13288-493-327185f89b28174b19022e6efdc4cb00-1280x670.jpg?format=jpeg&auto=webp&fit=bounds&width=400')"></div><p class="t">프리렌 팝업스토어 굿즈</p><p class="m">12.08까지</p></div>
+          <div class="card"><div class="img" style="background-image:url('https://animeanime.jp/imgs/rss/957077.jpg')"></div><p class="t">프리렌 팝업 굿즈</p><p class="m">11.25 시작</p></div>
+          <div class="card"><div class="img" style="background:var(--mint)"></div><p class="t">스누피타운숍 히로시마</p><p class="m">진행 중</p></div>
+        </div>
+        <div class="sec"><div class="ja">コラボ</div><h3>콜라보 한정</h3></div>
+        <div class="rail">
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/180826/117/180826-117-662e66c0a86beb7f4c152683b39fb6c6-471x151.png?format=jpeg&auto=webp&fit=bounds&width=400')"></div><p class="t">VICKS × 산리오 캐릭터즈</p><p class="m">12.09 출시</p></div>
+          <div class="card"><div class="img" style="background:var(--butter)"></div><p class="t">케이트 홀리데이 한정</p><p class="m">판매 중</p></div>
+        </div>
+        </div><div class="tab"><span class="on"><i></i>홈</span><span><i></i>소식</span><span><i></i>캘린더</span><span><i></i>팝업</span><span><i></i>브랜드</span></div>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="col">
+      <span class="tagline">시안 C · 핀보드</span>
+      <h2>높이가 다른 사진을 끝없이</h2>
+      <p class="why">사진 비율대로 높낮이가 다른 2열 보드입니다. 섹션 구분 없이 계속 내려가며 구경합니다. "구경하는 재미"는 가장 크지만, 팝업·콜라보 같은 구분은 칩으로만 합니다.</p>
+      <div class="phone"><div class="scr">
+        <div class="bar"><span class="mark"></span><span class="logo">JAPAN <b>FINDS</b></span><span class="ico">🔍</span></div>
+        <div class="chips"><span class="chip on">전체</span><span class="chip">치이카와</span><span class="chip">산리오</span><span class="chip">스누피</span><span class="chip">지브리</span><span class="chip">포켓몬</span><span class="chip">유니클로</span></div>
+        <div class="masonry">
+          <div class="card"><div class="img tall" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/1719/9183/1719-9183-9b64ef78cac8375620f93a01d73f21f2-1127x1600.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">치이카와 9권 (통상판·특장판)</p><p class="m"><span class="p">1,375엔</span> · 11.20</p></div>
+          <div class="card"><span class="st d">D-14</span><div class="img wide" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/2319/838/2319-838-588c8d2b1a166c719402bba8d2ea63f0-1600x900.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">폼폼푸린 30주년 한정 잡화</p><p class="m"><span class="p">390엔~</span></p></div>
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/22901/2286/22901-2286-1317f54aee486bbeeb72c4065c510390-1920x1280.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">하울의 움직이는 성 만년 달력</p><p class="m"><span class="p">13,200엔</span></p></div>
+          <div class="card"><div class="img tall" style="background-image:url('https://news.walkerplus.com/article/1452028/18951715_615.jpg')"></div><p class="t">유니클로 스누피 UT 키즈</p><p class="m"><span class="p">1,500엔</span></p></div>
+          <div class="card"><span class="st">팝업</span><div class="img wide" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/13288/493/13288-493-327185f89b28174b19022e6efdc4cb00-1280x670.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">장송의 프리렌 팝업스토어 굿즈</p><p class="m">12.08까지</p></div>
+          <div class="card"><div class="img" style="background-image:url('https://prcdn.freetls.fastly.net/release_image/38918/205/38918-205-7e9613a6f1d3590b9727f705fca89ee7-3900x2606.jpg?format=jpeg&auto=webp&fit=bounds&width=600')"></div><p class="t">스누피 디저트 커피 2종</p><p class="m"><span class="p">410엔</span></p></div>
+          <div class="card"><div class="img" style="background-image:url('https://animeanime.jp/imgs/rss/957077.jpg')"></div><p class="t">장송의 프리렌 팝업 굿즈</p><p class="m">11.25 시작</p></div>
+        </div>
+        </div><div class="tab"><span class="on"><i></i>홈</span><span><i></i>소식</span><span><i></i>캘린더</span><span><i></i>팝업</span><span><i></i>브랜드</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>비교</b>
+    <table>
+      <tr><th></th><th>A · 바로 그리드</th><th>B · 매거진</th><th>C · 핀보드</th></tr>
+      <tr><td>첫 화면에 보이는 글</td><td>4장</td><td>큰 1장 + 작은 4장</td><td>3~4장</td></tr>
+      <tr><td>종류별로 훑기</td><td>칩 + 아래 줄</td><td>가장 좋음 (줄마다 종류)</td><td>칩으로만</td></tr>
+      <tr><td>구경하는 재미</td><td>보통</td><td>좋음</td><td>가장 좋음</td></tr>
+      <tr><td>사진 없는 글 처리</td><td>아래 목록으로</td><td>아래 목록으로</td><td>보드에서 제외</td></tr>
+      <tr><td>구현 난이도</td><td>낮음</td><td>중간</td><td>중간 (칩은 인기 이름 목록 사용)</td></tr>
+    </table>
+    <p style="margin:12px 0 0"><b>추천: B.</b> 맨 위 한 장으로 "이런 걸 모아둔 곳"임을 바로 보여 주고, 팝업·콜라보처럼 지금 가진 데이터의 강점을 줄 단위로 살릴 수 있습니다. 검색창은 세 시안 모두 상단 돋보기 아이콘으로 줄였고, 소식 페이지에서는 그대로 쓸 수 있습니다.</p>
+  </div>
+</div>
+</body>
+</html>
