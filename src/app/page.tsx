@@ -7,6 +7,7 @@ import { ProductCard, ProductRow } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
 import { characterAndGacha, comparable, popupItems, upcoming } from "@/lib/catalog";
 import { getProducts } from "@/lib/data";
+import { isFavorite } from "@/lib/favorites";
 import { daysUntil } from "@/lib/format";
 import { gyeomsaReady, GYEOMSA_REQUEST_URL } from "@/lib/gyeomsa";
 import { SITE_URL } from "@/lib/site";
@@ -125,7 +126,8 @@ export default async function Home() {
   // 今週のかわいい: 최근 7일 글 가운데 한국에서 사랑받을 만한 것(추천)을 앞에, 그중에서도 캐릭터·가챠·문구·팝업을 맨 앞에 둔다
   const recent = live.filter((p) => daysUntil(p.addedAt) >= -7 && !p.tags.includes("관심낮음"));
   const cuteCats = ["character", "gacha", "stationery", "popup"];
-  const score = (p: Product) => (p.editorPick ? 0 : 2) + (cuteCats.includes(p.category) ? 0 : 1);
+  // 한국에서 잘 알려진 이름(치이카와·산리오·포켓몬·유니클로 …)이 든 글이 맨 앞, 그다음 추천 글, 그 안에서는 캐릭터·가챠·문구·팝업 먼저
+  const score = (p: Product) => (isFavorite(p) ? 0 : p.editorPick ? 3 : 6) + (cuteCats.includes(p.category) ? 0 : 1) + (p.imageUrl ? 0 : 1);
   const cute = recent.map((p, i) => ({ p, i })).sort((a, b) => score(a.p) - score(b.p) || a.i - b.i).map((x) => x.p);
   const soon = upcoming(products).slice(0, 6);
   const compare = comparable(products);
