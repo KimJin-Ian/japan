@@ -23,7 +23,7 @@ export default async function ProductsPage() {
         <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">
           한국어나 일본어 상품명, 브랜드, 캐릭터, 지역 이름으로 찾을 수 있어요.
         </p>
-        <div className="mb-5 md:hidden">
+        <div className="mb-5 max-w-xl">
           <SearchBox />
         </div>
       </div>

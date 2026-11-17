@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { SectionTitle } from "@/components/Bits";
-import { SearchBox } from "@/components/Chrome";
 import { DateRow } from "@/components/DateRow";
 import { CompareTeaser } from "@/components/PriceCompare";
-import { ProductCard, ProductRow } from "@/components/ProductCard";
+import { ProductCard, ProductRow, dateLine } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
-import { characterAndGacha, comparable, popupItems, upcoming } from "@/lib/catalog";
+import { characterAndGacha, comparable, jpOffer, popupItems, upcoming } from "@/lib/catalog";
 import { getProducts } from "@/lib/data";
 import { PIN_TAG, isFavorite } from "@/lib/favorites";
-import { daysUntil } from "@/lib/format";
+import { daysUntil, dday, yen } from "@/lib/format";
 import { gyeomsaReady, GYEOMSA_REQUEST_URL } from "@/lib/gyeomsa";
 import { SITE_URL } from "@/lib/site";
 import type { Product, VisualMotif } from "@/lib/types";
@@ -61,59 +60,46 @@ function Rail({ products }: { products: Product[] }) {
   );
 }
 
+/** 매거진형 상단: 대표 글 1장을 크게, 이어서 4장을 작게. 문구·검색창 없이 바로 글이 보인다 */
 function Hero({ products }: { products: Product[] }) {
-  // 사진이 있는 최근 소식 4개를 잡지 콜라주처럼 붙인다
-  const pile = products.filter((p) => p.imageUrl && p.saleStatus !== "ended").slice(0, 4);
-  const pos = ["col-span-3 row-span-2 -rotate-3", "col-span-2 rotate-2 translate-y-3", "col-span-2 -rotate-1", "col-span-3 rotate-3 -translate-y-2"];
-  const tapes = ["bg-butter", "bg-pink-deep", "bg-mint", "bg-lilac"];
+  const top = products.filter((p) => p.imageUrl && p.saleStatus !== "ended").slice(0, 5);
+  if (top.length < 5) return null;
+  const [big, ...small] = top;
+  const offer = jpOffer(big);
+  const meta = [offer ? yen(offer.price) : "", dateLine(big), big.brand !== "기타" ? big.brand : ""].filter(Boolean).join(" · ");
   return (
-    <section className="paper relative overflow-hidden border-b border-line/70">
-      <Sparkle className="sway absolute left-[6%] top-8 h-5 w-5 text-butter" />
-      <Sparkle className="sway absolute right-[8%] top-16 h-4 w-4 text-pink-deep [animation-delay:1.2s]" />
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 pb-10 pt-9 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12 lg:pb-16 lg:pt-14">
-        <div>
-          <p className="label-tag mb-4" lang="ja">
-            日本で見つけた、とっておきのアイテム
-          </p>
-          <h1 className="font-display text-[36px] leading-[1.2] text-ink sm:text-[46px] lg:text-[56px]">
-            일본에서 발견한,
-            <br />
-            <span className="tape" style={{ ["--tape" as string]: "var(--color-pink-deep)" }}>
-              작고 특별한 것들.
-            </span>
-          </h1>
-          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-ink-soft">
-            한정 굿즈, 콜라보, 팝업스토어. 일본에서 오늘 새로 나온 소식을 발매일·가격·파는 곳과 함께 한국어로 모았어요.
-          </p>
-          <div className="mt-6 max-w-lg">
-            <SearchBox big />
+    <section className="mx-auto max-w-6xl px-4 pt-4 lg:pt-6">
+      <h1 className="sr-only">일본 한정판·팝업스토어·콜라보 굿즈 소식</h1>
+      <div className="grid gap-2 lg:grid-cols-[1.25fr_1fr] lg:gap-4">
+        <Link href={`/products/${big.slug}`} className="card card-hover relative block overflow-hidden !rounded-[24px]">
+          <ProductVisual product={big} className="aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-[420px]" />
+          {big.saleStatus === "upcoming" && big.releaseDate && (
+            <span className="sticker absolute left-3 top-3 -rotate-3 bg-coral text-white">곧 출시 {dday(big.releaseDate)}</span>
+          )}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 via-ink/45 to-transparent px-4 pb-3.5 pt-12 text-white lg:px-6 lg:pb-5">
+            <p className="line-clamp-2 font-display text-[20px] leading-snug lg:text-[28px]">{big.nameKo}</p>
+            {meta && <p className="mt-1 text-[12px] opacity-90 lg:text-[14px]">{meta}</p>}
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2.5">
-            <Link href="/products" className="btn btn-primary h-12 px-6 text-[15px]">
-              새로 올라온 소식 구경하기
-            </Link>
-            <Link href="/popup" className="btn btn-secondary h-12 px-5 text-[14px]">
-              팝업스토어 일정
-            </Link>
-          </div>
-        </div>
-
-        {pile.length >= 3 && (
-          <div className="relative mx-auto grid w-full max-w-md grid-cols-5 gap-3 px-2 pb-4 lg:max-w-none lg:gap-4">
-            {pile.map((p, i) => (
-              <Link key={p.id} href={`/products/${p.slug}`} className={`card relative block p-1.5 pb-2 ${pos[i]}`}>
-                <span className={`absolute -top-2 left-1/2 h-4 w-12 -translate-x-1/2 -rotate-3 rounded-[2px] opacity-90 ${tapes[i]}`} aria-hidden />
-                <ProductVisual product={p} className={`${i === 0 ? "aspect-[4/5]" : "aspect-square"} rounded-[14px]`} />
-                <p className="mt-1.5 truncate px-1 text-center text-[11px] font-bold text-ink-soft">{p.nameKo}</p>
-              </Link>
-            ))}
-            <span className="sway absolute -bottom-1 right-2 grid h-16 w-16 place-items-center rounded-full bg-coral text-center font-maru text-[11px] font-black leading-tight text-white shadow-[0_3px_0_#c4444c]" lang="ja" aria-hidden>
-              毎日
-              <br />
-              NEW
-            </span>
-          </div>
-        )}
+        </Link>
+        <ul className="grid grid-cols-4 gap-2 lg:grid-cols-2 lg:gap-4">
+          {small.map((p) => {
+            const o = jpOffer(p);
+            return (
+              <li key={p.id}>
+                <Link href={`/products/${p.slug}`} className="card card-hover block h-full p-1 lg:p-1.5" aria-label={p.nameKo}>
+                  <ProductVisual product={p} className="aspect-square rounded-[14px] lg:aspect-[4/3] lg:rounded-2xl" />
+                  <div className="hidden px-1.5 pb-1.5 pt-2 lg:block">
+                    <p className="line-clamp-2 text-[14px] font-bold leading-snug text-ink">{p.nameKo}</p>
+                    <p className="mt-1 text-[12px] text-mute">
+                      {o && <b className="mr-1.5 text-ink">{yen(o.price)}</b>}
+                      {dateLine(p)}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
   );
@@ -132,6 +118,8 @@ export default async function Home() {
   // 맨 위는 고정 글. 수집할 때마다 바뀌지 않고, 판매가 끝나거나 오래되면 수집기(curate.py)가 바꿔 끼운다
   const pinned = live.filter((p) => p.tags.includes(PIN_TAG) && p.imageUrl).sort((a, b) => a.slug.localeCompare(b.slug));
   const cute = [...pinned, ...ranked.filter((p) => !pinned.includes(p))];
+  const heroList = cute.filter((p) => p.imageUrl).length >= 5 ? cute : live;
+  const heroIds = new Set(heroList.filter((p) => p.imageUrl).slice(0, 5).map((p) => p.id));
   const soon = upcoming(products).slice(0, 6);
   const compare = comparable(products);
 
@@ -179,9 +167,17 @@ export default async function Home() {
           }),
         }}
       />
-      <Hero products={cute.length >= 4 ? cute : products} />
+      <Hero products={heroList} />
 
-      <div className="mx-auto max-w-6xl space-y-14 pt-9 lg:space-y-20 lg:px-4 lg:pt-12">
+      <div className="mx-auto max-w-6xl space-y-12 pt-8 lg:space-y-16 lg:px-4 lg:pt-10">
+        {/* 今週のかわいい */}
+        {cute.length > 0 && (
+          <section>
+            <SectionTitle ja="今週のかわいい" title="이번 주 발견한 귀여운 아이템" note="최근 일주일, 한국에서 사랑받을 만한 것부터" href="/products" tape="var(--color-pink-deep)" />
+            <Rail products={cute.filter((p) => !heroIds.has(p.id))} />
+          </section>
+        )}
+
         {/* 카테고리: 파스텔 아이콘 카드 */}
         <nav aria-label="카테고리">
           <ul className="grid grid-cols-4 gap-2.5 px-4 lg:grid-cols-8 lg:gap-3 lg:px-0">
@@ -198,14 +194,6 @@ export default async function Home() {
             ))}
           </ul>
         </nav>
-
-        {/* 今週のかわいい */}
-        {cute.length > 0 && (
-          <section>
-            <SectionTitle ja="今週のかわいい" title="이번 주 발견한 귀여운 아이템" note="최근 일주일, 한국에서 사랑받을 만한 것부터" href="/products" tape="var(--color-pink-deep)" />
-            <Rail products={cute} />
-          </section>
-        )}
 
         {/* 日本限定 COLLECTION */}
         {collections.length > 0 && (

@@ -92,9 +92,6 @@ export function Header() {
       </p>
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 lg:h-16">
         <Logo />
-        <div className="hidden flex-1 px-4 md:block">
-          <SearchBox />
-        </div>
         <nav className="ml-auto hidden items-center gap-1 text-[14px] font-bold text-ink-soft lg:flex">
           <Link href="/products" className="rounded-full px-3 py-2 hover:bg-cream-deep">
             소식
@@ -112,7 +109,7 @@ export function Header() {
             브랜드
           </Link>
         </nav>
-        <Link href="/products" aria-label="검색" className="ml-auto grid h-11 w-11 place-items-center rounded-full text-ink-soft md:hidden">
+        <Link href="/products" aria-label="검색" className="ml-auto grid h-11 w-11 place-items-center rounded-full text-ink-soft hover:bg-cream-deep lg:ml-1">
           <Icon d={I.search} />
         </Link>
       </div>

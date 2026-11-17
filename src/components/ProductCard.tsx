@@ -8,7 +8,7 @@ import { Krw } from "./Rate";
 import { LimitedStickers } from "./Stickers";
 
 /** 지금 이 소식에서 가장 쓸모 있는 날짜 정보 한 줄 */
-const dateLine = (p: Product) => {
+export const dateLine = (p: Product) => {
   if (p.saleStatus === "ended") return "판매 종료";
   if (p.saleStatus === "upcoming" && p.releaseDate) return `${shortDate(p.releaseDate)} 출시 · ${dday(p.releaseDate)}`;
   if (p.endDate) return `${shortDate(p.endDate)}까지 · ${dday(p.endDate)}`;
