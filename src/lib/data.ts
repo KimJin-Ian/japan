@@ -41,6 +41,14 @@ const toOffer = (o: any): Offer => ({
 
 const toSource = (s: any): Source => ({ label: s.label, url: s.url, type: s.type, checkedAt: kst(s.checked_at), verified: s.verified });
 
+/** 판매 상태는 날짜로 다시 계산한다(DB 값은 게시할 때 한 번 정해진 것이라 종료일이 지나도 바뀌지 않는다) */
+const liveStatus = (r: any): Product["saleStatus"] => {
+  const today = new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
+  if (r.end_date && r.end_date < today) return "ended";
+  if (r.release_date && r.release_date > today) return "upcoming";
+  return r.sale_status === "ended" ? "ended" : "on_sale";
+};
+
 const toProduct = (r: any): Product => ({
   id: r.id,
   slug: r.slug,
@@ -57,7 +65,7 @@ const toProduct = (r: any): Product => ({
   places: r.places ?? [],
   releaseDate: r.release_date ?? undefined,
   endDate: r.end_date ?? undefined,
-  saleStatus: r.sale_status,
+  saleStatus: liveStatus(r),
   krOfficial: r.kr_official,
   conditions: r.conditions ?? [],
   offers: (r.product_offers ?? []).map(toOffer),

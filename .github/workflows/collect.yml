@@ -47,3 +47,9 @@ jobs:
         run: |
           pip install -q anthropic pydantic
           python collector/analyze.py
+      - name: 홈 상단 고정 글 정리
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: python collector/curate.py

@@ -7,7 +7,7 @@ import { ProductCard, ProductRow } from "@/components/ProductCard";
 import { MotifIcon, ProductVisual } from "@/components/ProductVisual";
 import { characterAndGacha, comparable, popupItems, upcoming } from "@/lib/catalog";
 import { getProducts } from "@/lib/data";
-import { isFavorite } from "@/lib/favorites";
+import { PIN_TAG, isFavorite } from "@/lib/favorites";
 import { daysUntil } from "@/lib/format";
 import { gyeomsaReady, GYEOMSA_REQUEST_URL } from "@/lib/gyeomsa";
 import { SITE_URL } from "@/lib/site";
@@ -128,7 +128,10 @@ export default async function Home() {
   const cuteCats = ["character", "gacha", "stationery", "popup"];
   // 한국에서 잘 알려진 이름(치이카와·산리오·포켓몬·유니클로 …)이 든 글이 맨 앞, 그다음 추천 글, 그 안에서는 캐릭터·가챠·문구·팝업 먼저
   const score = (p: Product) => (isFavorite(p) ? 0 : p.editorPick ? 3 : 6) + (cuteCats.includes(p.category) ? 0 : 1) + (p.imageUrl ? 0 : 1);
-  const cute = recent.map((p, i) => ({ p, i })).sort((a, b) => score(a.p) - score(b.p) || a.i - b.i).map((x) => x.p);
+  const ranked = recent.map((p, i) => ({ p, i })).sort((a, b) => score(a.p) - score(b.p) || a.i - b.i).map((x) => x.p);
+  // 맨 위는 고정 글. 수집할 때마다 바뀌지 않고, 판매가 끝나거나 오래되면 수집기(curate.py)가 바꿔 끼운다
+  const pinned = live.filter((p) => p.tags.includes(PIN_TAG) && p.imageUrl).sort((a, b) => a.slug.localeCompare(b.slug));
+  const cute = [...pinned, ...ranked.filter((p) => !pinned.includes(p))];
   const soon = upcoming(products).slice(0, 6);
   const compare = comparable(products);
 
