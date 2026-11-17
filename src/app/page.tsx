@@ -144,6 +144,10 @@ export default async function Home() {
     { title: "기간·수량 한정", ja: "期間限定", href: "/products?limited=period", bg: "bg-peach", items: live.filter((p) => p.limited.status === "verified") },
   ].filter((c) => c.items.length > 0);
 
+  // 코너마다 한국에서 잘 알려진 이름이 든 글을 앞에, 그다음 추천 글, 관심 낮은 글은 맨 뒤로 (같은 순위 안에서는 최신순 유지)
+  const favRank = (p: Product) => (isFavorite(p) ? 0 : p.editorPick ? 1 : p.tags.includes("관심낮음") ? 3 : 2);
+  const favFirst = (list: Product[]) => list.map((p, i) => ({ p, i })).sort((a, b) => favRank(a.p) - favRank(b.p) || a.i - b.i).map((x) => x.p);
+
   const corners: { ja: string; title: string; note?: string; href: string; tape: string; items: Product[] }[] = [
     { ja: "ポップアップ", title: "지금 열리는 팝업스토어", note: "기간이 끝나면 살 수 없어요", href: "/popup", tape: "var(--color-mint)", items: popupItems(products) },
     { ja: "コラボ", title: "콜라보 한정 아이템", note: "브랜드 × 캐릭터 · 브랜드 × 브랜드", href: "/collab", tape: "var(--color-lilac)", items: live.filter((p) => hasTag(p, "コラボ")) },
@@ -255,7 +259,7 @@ export default async function Home() {
           .map((c) => (
             <section key={c.ja}>
               <SectionTitle ja={c.ja} title={c.title} note={c.note} href={c.href} tape={c.tape} />
-              <Rail products={c.items} />
+              <Rail products={favFirst(c.items)} />
             </section>
           ))}
 

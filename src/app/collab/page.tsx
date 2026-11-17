@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ProductGrid } from "@/components/ProductCard";
 import { getProducts } from "@/lib/data";
+import { isFavorite } from "@/lib/favorites";
 
 export const metadata: Metadata = {
   title: "일본 콜라보 한정 아이템",
@@ -13,7 +14,12 @@ export default async function CollabPage() {
   const all = await getProducts();
   const isCollab = (tags: string[], name: string) => tags.some((t) => t.includes("コラボ")) || name.includes("×") || name.includes("콜라보");
   const products = all.filter((p) => isCollab(p.tags, p.nameKo));
-  const live = products.filter((p) => p.saleStatus !== "ended");
+  // 한국에서 잘 알려진 이름이 든 글을 앞에
+  const live = products
+    .filter((p) => p.saleStatus !== "ended")
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => Number(isFavorite(b.p)) - Number(isFavorite(a.p)) || Number(Boolean(b.p.editorPick)) - Number(Boolean(a.p.editorPick)) || a.i - b.i)
+    .map((x) => x.p);
   const ended = products.filter((p) => p.saleStatus === "ended");
   return (
     <div className="mx-auto max-w-6xl px-4 pb-6 pt-6">
@@ -23,7 +29,7 @@ export default async function CollabPage() {
           콜라보 한정 아이템
         </span>
       </h1>
-      <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">브랜드 × 캐릭터, 브랜드 × 브랜드. 최근 발표순이에요.</p>
+      <p className="mb-6 mt-2 text-[13px] leading-relaxed text-ink-soft">브랜드 × 캐릭터, 브랜드 × 브랜드. 한국에서 인기 있는 이름부터 보여 드려요.</p>
       {live.length > 0 ? <ProductGrid products={live} /> : <p className="card dots px-6 py-12 text-center text-[14px] text-ink-soft">지금 진행 중인 콜라보 소식이 없어요.</p>}
       {ended.length > 0 && (
         <section className="mt-12">
