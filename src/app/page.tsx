@@ -86,8 +86,9 @@ function Hero({ products }: { products: Product[] }) {
             const o = jpOffer(p);
             return (
               <li key={p.id}>
-                <Link href={`/products/${p.slug}`} className="card card-hover block h-full p-1 lg:p-1.5" aria-label={p.nameKo}>
-                  <ProductVisual product={p} className="aspect-square rounded-[14px] lg:aspect-[4/3] lg:rounded-2xl" />
+                <Link href={`/products/${p.slug}`} className="card card-hover flex h-full flex-col p-1 lg:p-1.5" aria-label={p.nameKo}>
+                  {/* 웹에서는 카드 높이에 맞춰 사진이 남는 공간을 다 채운다 */}
+                  <ProductVisual product={p} className="aspect-square rounded-[14px] lg:aspect-auto lg:min-h-[150px] lg:flex-1 lg:rounded-2xl" />
                   <div className="hidden px-1.5 pb-1.5 pt-2 lg:block">
                     <p className="line-clamp-2 text-[14px] font-bold leading-snug text-ink">{p.nameKo}</p>
                     <p className="mt-1 text-[12px] text-mute">
