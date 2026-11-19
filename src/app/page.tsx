@@ -81,17 +81,18 @@ function Hero({ products }: { products: Product[] }) {
             {meta && <p className="mt-1 text-[12px] opacity-90 lg:text-[14px]">{meta}</p>}
           </div>
         </Link>
-        <ul className="grid grid-cols-4 gap-2 lg:grid-cols-2 lg:gap-4">
+        {/* 휴대폰: 2칸 × 2줄, 사진 밑에 제목 · 가격 (4칸 한 줄에 사진만 있으면 무슨 소식인지 알 수 없었다 — 11/19) */}
+        <ul className="grid grid-cols-2 gap-2 lg:grid-cols-2 lg:gap-4">
           {small.map((p) => {
             const o = jpOffer(p);
             return (
               <li key={p.id}>
                 <Link href={`/products/${p.slug}`} className="card card-hover flex h-full flex-col p-1 lg:p-1.5" aria-label={p.nameKo}>
                   {/* 웹에서는 카드 높이에 맞춰 사진이 남는 공간을 다 채운다 */}
-                  <ProductVisual product={p} className="aspect-square rounded-[14px] lg:aspect-auto lg:min-h-[150px] lg:flex-1 lg:rounded-2xl" />
-                  <div className="hidden px-1.5 pb-1.5 pt-2 lg:block">
-                    <p className="line-clamp-2 text-[14px] font-bold leading-snug text-ink">{p.nameKo}</p>
-                    <p className="mt-1 text-[12px] text-mute">
+                  <ProductVisual product={p} className="aspect-[4/3] rounded-[14px] lg:aspect-auto lg:min-h-[150px] lg:flex-1 lg:rounded-2xl" />
+                  <div className="px-1 pb-1 pt-1.5 lg:px-1.5 lg:pb-1.5 lg:pt-2">
+                    <p className="line-clamp-2 text-[13px] font-bold leading-snug text-ink lg:text-[14px]">{p.nameKo}</p>
+                    <p className="mt-0.5 line-clamp-1 text-[11px] text-mute lg:mt-1 lg:text-[12px]">
                       {o && <b className="mr-1.5 text-ink">{yen(o.price)}</b>}
                       {dateLine(p)}
                     </p>
